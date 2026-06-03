@@ -1,5 +1,7 @@
 import { Route } from '@angular/router';
 import { Home } from './home/home';
+import { Headings } from './headings/headings';
+import { WrongHeadings } from './wrong-headings/wrong-headings';
 
 export interface NavRoute {
   path: string;
@@ -20,5 +22,7 @@ export function getNavRoutes(): NavRoute[] {
 
 export const appRoutes: Route[] = [
   { path: 'home', component: Home, title: 'Home' },
+  { path: 'headings', component: Headings, title: 'Headings' },
+  { path: 'wrong-headings', component: WrongHeadings, title: 'Wrong Headings' },
   { path: '**', redirectTo: 'home' },
 ];

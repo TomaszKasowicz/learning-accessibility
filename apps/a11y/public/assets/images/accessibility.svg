@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title desc">
+  <title id="title">Accessibility</title>
+  <desc id="desc">Universal access symbol: a stylized person within a circle</desc>
+  <circle cx="60" cy="60" r="56" fill="#e8f0fe" stroke="#1a73e8" stroke-width="4" />
+  <circle cx="60" cy="34" r="8" fill="#1a73e8" />
+  <path
+    d="M60 46 L60 72 M42 54 L78 54 M60 72 L44 96 M60 72 L76 96"
+    fill="none"
+    stroke="#1a73e8"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

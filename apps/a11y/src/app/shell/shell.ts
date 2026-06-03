@@ -1,19 +1,23 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import {
   Component,
+  ElementRef,
   effect,
   inject,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { RouterModule } from '@angular/router';
-import { map } from 'rxjs';
-import { appRoutes, getNavRoutes } from '../app.routes';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { filter, map } from 'rxjs';
+import { AxeViolations } from '../axe/axe-violations';
+import { AxeService } from '../axe/axe.service';
+import { getNavRoutes } from '../app.routes';
 
 @Component({
   selector: 'app-shell',
@@ -24,6 +28,8 @@ import { appRoutes, getNavRoutes } from '../app.routes';
     MatIconModule,
     MatButtonModule,
     MatListModule,
+    MatProgressSpinnerModule,
+    AxeViolations,
   ],
   template: `
     <mat-sidenav-container class="shell-container">
@@ -61,10 +67,26 @@ import { appRoutes, getNavRoutes } from '../app.routes';
             </button>
           }
           <h1 class="shell-title">{{ title }}</h1>
+          <span class="toolbar-spacer"></span>
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="axe.running()"
+            (click)="runAxeTest()"
+          >
+            @if (axe.running()) {
+              <mat-spinner diameter="18" />
+            } @else {
+              Run Axe test
+            }
+          </button>
         </mat-toolbar>
 
         <main class="content">
-          <router-outlet />
+          <div class="route-content" #routeContent>
+            <router-outlet />
+          </div>
+          <app-axe-violations />
         </main>
       </mat-sidenav-content>
     </mat-sidenav-container>
@@ -85,8 +107,16 @@ import { appRoutes, getNavRoutes } from '../app.routes';
       font-weight: 500;
     }
 
+    .toolbar-spacer {
+      flex: 1 1 auto;
+    }
+
     .content {
       padding: 1.5rem;
+    }
+
+    .route-content {
+      display: block;
     }
 
     a.active {
@@ -101,9 +131,12 @@ import { appRoutes, getNavRoutes } from '../app.routes';
 export class Shell {
   protected readonly title = 'a11y';
   protected readonly navItems = getNavRoutes();
+  protected readonly axe = inject(AxeService);
 
   private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly router = inject(Router);
   private readonly drawer = viewChild.required<MatSidenav>('drawer');
+  private readonly routeContent = viewChild.required<ElementRef<HTMLElement>>('routeContent');
 
   protected readonly isMobile = toSignal(
     this.breakpointObserver
@@ -123,6 +156,17 @@ export class Shell {
         drawer.open();
       }
     });
+
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.axe.clear());
+  }
+
+  protected async runAxeTest(): Promise<void> {
+    await this.axe.run(this.routeContent().nativeElement);
   }
 
   protected closeSidenavOnNavigate(): void {
