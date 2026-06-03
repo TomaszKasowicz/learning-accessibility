@@ -1,5 +1,8 @@
 import { Injectable, signal } from '@angular/core';
-import type { Result } from 'axe-core';
+import type { AxeResults, Result } from 'axe-core';
+import { AXE_RUN_OPTIONS } from './axe.config';
+
+type AxeModule = typeof import('axe-core');
 
 @Injectable({ providedIn: 'root' })
 export class AxeService {
@@ -7,12 +10,25 @@ export class AxeService {
   readonly running = signal(false);
   readonly hasRun = signal(false);
 
+  private axe: AxeModule | null = null;
+
+  private async initialize(): Promise<AxeModule> {
+    if (this.axe) {
+      return this.axe;
+    }
+
+    this.axe = await import('axe-core');
+    this.axe.setup(document);
+
+    return this.axe;
+  }
+
   async run(context: Element): Promise<void> {
     this.running.set(true);
 
     try {
-      const axe = await import('axe-core');
-      const results = await axe.run(context);
+      const axe = await this.initialize();
+      const results: AxeResults = await axe.run(context /*, AXE_RUN_OPTIONS*/);
 
       this.violations.set(results.violations);
       this.hasRun.set(true);

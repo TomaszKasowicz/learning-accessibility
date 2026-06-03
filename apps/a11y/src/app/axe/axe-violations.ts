@@ -36,9 +36,15 @@ import { AxeService } from './axe.service';
                 class="axe-violation-item"
                 (click)="logViolation(violation)"
               >
-                <span matListItemTitle>{{ violation.help }}</span>
+                <span matListItemTitle>{{ violation.help }} ({{ violation.tags.join(', ') }})</span>
                 <span matListItemLine>
                   {{ violation.id }} · {{ violation.impact ?? 'unknown' }} impact
+                </span>
+                <span matListItemLine>
+                  Description: {{ violation.description }}
+                </span>
+                <span matListItemLine>
+                  Help URL: <a href="{{ violation.helpUrl }}" target="_blank">{{ violation.helpUrl }}</a>
                 </span>
               </button>
             }
@@ -113,6 +119,7 @@ export class AxeViolations {
   protected logViolation(violation: Result): void {
     console.group(`Axe: ${violation.id} — ${violation.help}`);
     console.log('Impact:', violation.impact);
+    console.log('Tags:', violation.tags);
     console.log('Description:', violation.description);
     console.log('Help URL:', violation.helpUrl);
     violation.nodes.forEach((node, index) => {
