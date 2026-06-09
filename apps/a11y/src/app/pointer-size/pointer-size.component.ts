@@ -10,17 +10,18 @@ import { Component } from "@angular/core";
   `,
   styles: `
   button {
-    margin: 0.5rem;
+    margin: 0;
   }
 
   .large-button {
     width: 100px;
     height: 100px;
   }
+
   .small-button {
-    width: 1rem;
-    height: 1rem;
     padding: 0;
+    margin: 1px;
+    font-size: 3px;
   }
 
   `,
