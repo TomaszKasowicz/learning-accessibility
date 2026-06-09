@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>A11y &amp; axe Glossary — Reference</title>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --muted: #5a5a72;
+    --line: #e4e4ee;
+    --accent: #4338ca;
+    --accent-soft: #eef0ff;
+    --code-bg: #f5f5fa;
+    --crit: #b91c1c;
+    --serious: #c2410c;
+    --moderate: #a16207;
+    --minor: #4d7c0f;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: #fbfbfd;
+    padding: 3rem 1.25rem 5rem;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header.doc { border-bottom: 2px solid var(--ink); padding-bottom: 1rem; margin-bottom: 2rem; }
+  .kicker { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  h1 { font-size: 2rem; margin: .3rem 0 .25rem; letter-spacing: -.02em; }
+  .sub { color: var(--muted); margin: 0; }
+  h2 {
+    font-size: 1.15rem; margin: 2.4rem 0 .4rem; padding-bottom: .3rem;
+    border-bottom: 1px solid var(--line); letter-spacing: -.01em;
+  }
+  dl { margin: 0; }
+  dt { font-weight: 700; margin-top: 1.1rem; }
+  dd { margin: .2rem 0 0; color: #2c2c3e; }
+  dd .src { display: block; font-size: .8rem; color: var(--muted); margin-top: .15rem; }
+  code { background: var(--code-bg); padding: .1em .4em; border-radius: 5px; font-size: .88em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+  a:hover { border-bottom-color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: .6rem 0 0; font-size: .92rem; }
+  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .pill { display: inline-block; padding: .05rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 700; color: #fff; }
+  .pill.crit { background: var(--crit); }
+  .pill.serious { background: var(--serious); }
+  .pill.moderate { background: var(--moderate); }
+  .pill.minor { background: var(--minor); }
+  .note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: .75rem 1rem; border-radius: 0 8px 8px 0; margin: 1.2rem 0; font-size: .92rem; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+  @media print {
+    body { background: #fff; padding: 0; font-size: 11pt; }
+    a { color: var(--ink); border: none; }
+    h2 { page-break-after: avoid; }
+    dt { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="doc">
+    <div class="kicker">Reference · keep open while working</div>
+    <h1>A11y &amp; axe Glossary</h1>
+    <p class="sub">The shared vocabulary for this workspace. Every lesson uses these terms exactly as defined here.</p>
+  </header>
+
+  <h2>Core accessibility terms</h2>
+  <dl>
+    <dt>WCAG (Web Content Accessibility Guidelines)</dt>
+    <dd>The W3C standard for web accessibility. Organised as <strong>POUR</strong> principles → guidelines → testable <em>success criteria</em>. Current version: <strong>2.2</strong> (Oct 2023).
+      <span class="src"><a href="https://www.w3.org/TR/WCAG22/">w3.org/TR/WCAG22</a></span></dd>
+
+    <dt>POUR</dt>
+    <dd>The four WCAG principles: <strong>P</strong>erceivable, <strong>O</strong>perable, <strong>U</strong>nderstandable, <strong>R</strong>obust. Every success criterion lives under one.</dd>
+
+    <dt>Success Criterion (SC)</dt>
+    <dd>A single testable requirement, numbered <code>principle.guideline.criterion</code> — e.g. <code>1.1.1</code> Non-text Content. Each has a conformance <em>level</em> (A / AA / AAA).</dd>
+
+    <dt>Conformance level (A / AA / AAA)</dt>
+    <dd>A = minimum, AA = the legal/industry baseline (ADA, EAA, AODA), AAA = enhanced. Our bar maps to A + AA.</dd>
+
+    <dt>Accessibility tree</dt>
+    <dd>The browser's parallel-to-the-DOM structure that exposes <em>role</em>, <em>name</em>, <em>state</em>, and <em>value</em> to assistive tech. Most a11y bugs are really "the a11y tree is wrong."</dd>
+
+    <dt>Role · Name · State · Value</dt>
+    <dd>What a screen reader announces for an element. <em>Role</em> = what it is (button, checkbox), <em>Name</em> = its label, <em>State</em> = checked/expanded/disabled, <em>Value</em> = current value.</dd>
+
+    <dt>Accessible name</dt>
+    <dd>The single string a screen reader announces as an element's label. Computed by precedence: <code>aria-labelledby</code> → <code>aria-label</code> → native (<code>&lt;label&gt;</code>, <code>alt</code>) → text content → <code>title</code>.
+      <span class="src"><a href="https://www.w3.org/TR/accname-1.2/">AccName 1.2</a></span></dd>
+
+    <dt>ARIA (WAI-ARIA)</dt>
+    <dd>Attributes (<code>role</code>, <code>aria-*</code>) that patch the a11y tree when native HTML can't express semantics. Rule of thumb: <strong>prefer native HTML; reach for ARIA only when you must.</strong>
+      <span class="src"><a href="https://www.w3.org/WAI/ARIA/apg/">ARIA APG</a></span></dd>
+
+    <dt>Landmark</dt>
+    <dd>A region role (<code>banner</code>, <code>nav</code>, <code>main</code>, <code>contentinfo</code>) — usually from native elements (<code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code>) — that lets users jump around a page.</dd>
+  </dl>
+
+  <h2>axe-core terms</h2>
+  <dl>
+    <dt>axe-core</dt>
+    <dd>Deque's open-source accessibility rules engine. It powers axe DevTools, Lighthouse's a11y audits, pa11y (optionally), <code>@axe-core/playwright</code>, and more. The engine the skill will target.
+      <span class="src"><a href="https://github.com/dequelabs/axe-core">github.com/dequelabs/axe-core</a></span></dd>
+
+    <dt>Rule</dt>
+    <dd>One automated check with an <code>id</code> (e.g. <code>image-alt</code>, <code>color-contrast</code>, <code>button-name</code>). A rule runs one or more <em>checks</em> against matching nodes.</dd>
+
+    <dt>Tag</dt>
+    <dd>Metadata on a rule. Includes a standard tag (<code>wcag2a</code>, <code>wcag2aa</code>, <code>wcag21aa</code>, <code>wcag22aa</code>, or <code>best-practice</code>), an SC tag (<code>wcag111</code> = SC 1.1.1), and category tags (<code>cat.forms</code>). You select rules to run via tags.
+      <span class="src"><a href="https://github.com/dequelabs/axe-core/blob/develop/doc/API.md">axe API.md</a></span></dd>
+
+    <dt>Default ruleset (our bar)</dt>
+    <dd>What axe runs when you don't restrict tags: <code>wcag2a</code>, <code>wcag2aa</code>, <code>wcag21a</code>, <code>wcag21aa</code>, <code>wcag22aa</code>, and <code>best-practice</code>. (Excludes AAA, experimental, and section508-only.)</dd>
+
+    <dt>Impact</dt>
+    <dd>Severity of a violation. One of:
+      <span class="pill crit">critical</span>
+      <span class="pill serious">serious</span>
+      <span class="pill moderate">moderate</span>
+      <span class="pill minor">minor</span>. Use it to triage fix order.</dd>
+
+    <dt>Result groups</dt>
+    <dd>axe sorts every node into one of four buckets:
+      <table>
+        <tr><th>Group</th><th>Meaning</th></tr>
+        <tr><td><code>violations</code></td><td>Failed a check — fix these.</td></tr>
+        <tr><td><code>incomplete</code></td><td>axe couldn't decide — needs a human to check.</td></tr>
+        <tr><td><code>passes</code></td><td>Passed the check.</td></tr>
+        <tr><td><code>inapplicable</code></td><td>No matching elements on the page.</td></tr>
+      </table>
+    </dd>
+
+    <dt>Node / target</dt>
+    <dd>The specific element a result applies to. <code>target</code> is a CSS-selector array pointing at it; <code>html</code> is its outer HTML snippet; <code>failureSummary</code> says what to fix.</dd>
+
+    <dt>helpUrl</dt>
+    <dd>Per-violation link to Deque University's fix guidance (<code>dequeuniversity.com/rules/axe/&lt;ver&gt;/&lt;rule-id&gt;</code>). Always in the result — your first stop for "how do I fix this?"</dd>
+
+    <dt>check (any / all / none)</dt>
+    <dd>Sub-tests inside a rule. A rule passes per its logic: <em>any</em> = at least one must pass, <em>all</em> = every one must pass, <em>none</em> = none may pass.</dd>
+  </dl>
+
+  <h2>Tooling layers</h2>
+  <dl>
+    <dt>Static analysis (lint)</dt>
+    <dd>Catches issues in source before render. <code>eslint-plugin-jsx-a11y</code> (React/JSX), <code>@angular-eslint/template/accessibility-*</code> (Angular). Cheapest, fastest, but blind to runtime DOM.</dd>
+
+    <dt>Runtime / rendered-DOM scan</dt>
+    <dd>Runs axe against the real a11y tree after render. <code>@axe-core/playwright</code>, axe DevTools, Lighthouse. Catches what lint can't (computed contrast, dynamic ARIA).</dd>
+
+    <dt>Manual verification</dt>
+    <dd>Keyboard-only navigation + screen reader (VoiceOver/NVDA). Required because automated tools catch only ~30–50% of issues — they can't judge whether a name is <em>meaningful</em>.</dd>
+  </dl>
+
+  <div class="note">
+    <strong>Mental model:</strong> Tools check the <em>accessibility tree</em>, not your DOM directly. When a fix doesn't clear a violation, ask "what does this look like in the a11y tree?" — not "what does my markup say?"
+  </div>
+
+  <footer>
+    Reference doc · this workspace · grounded in
+    <a href="https://www.w3.org/TR/WCAG22/">WCAG 2.2</a>,
+    <a href="https://github.com/dequelabs/axe-core/blob/develop/doc/API.md">axe-core API</a>,
+    <a href="https://www.w3.org/TR/accname-1.2/">AccName 1.2</a>.
+    Ask your teacher (the agent) to add a term any time one is missing.
+  </footer>
+</div>
+</body>
+</html>

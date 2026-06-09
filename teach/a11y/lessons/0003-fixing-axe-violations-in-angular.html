@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 03 — Fixing the top axe violations in Angular</title>
+<style>
+  :root {
+    --ink: #16161d; --muted: #5d5d72; --line: #e6e6ef;
+    --accent: #4338ca; --accent-soft: #eef0ff; --bg: #fbfbfd;
+    --code-bg: #1e1e2e; --code-ink: #e4e4f0;
+    --ok: #15803d; --ok-soft: #e7f6ec; --bad: #b91c1c; --bad-soft: #fbeaea;
+    --crit: #b91c1c; --serious: #c2410c; --moderate: #a16207;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 3rem 1.25rem 6rem; }
+  .wrap { max-width: 800px; margin: 0 auto; }
+  .kicker { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  h1 { font-size: 2.05rem; line-height: 1.15; letter-spacing: -.025em; margin: .35rem 0 .5rem; }
+  .lede { font-size: 1.1rem; color: #33333f; margin: 0; }
+  .mission { font-size: .9rem; color: var(--muted); background: var(--accent-soft); border-radius: 8px; padding: .7rem .9rem; margin: 1.2rem 0 2rem; }
+  h2 { font-size: 1.3rem; letter-spacing: -.01em; margin: 2.6rem 0 .4rem; }
+  p { margin: .7rem 0; }
+  a { color: var(--accent); }
+  code { background: #f0f0f7; padding: .1em .4em; border-radius: 5px; font-size: .86em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .cite { font-size: .82rem; color: var(--muted); } .cite a { color: var(--muted); }
+  .note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .95rem; }
+
+  .fixcard { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin: 1.2rem 0; background: #fff; }
+  .fixcard .head { display: flex; align-items: center; gap: .6rem; padding: .8rem 1.1rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .fixcard .rule { font-family: ui-monospace, monospace; font-size: .82rem; background: #f0f0f7; padding: .12rem .5rem; border-radius: 6px; }
+  .fixcard .head h3 { margin: 0; font-size: 1.02rem; }
+  .pill { display: inline-block; padding: .04rem .5rem; border-radius: 999px; font-size: .7rem; font-weight: 700; color: #fff; }
+  .pill.crit { background: var(--crit); } .pill.serious { background: var(--serious); } .pill.moderate { background: var(--moderate); }
+  .sc { font-size: .72rem; color: var(--muted); }
+  .fixcard .body { padding: .3rem 1.1rem 1rem; }
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-top: .7rem; }
+  @media (max-width: 620px) { .ba { grid-template-columns: 1fr; } }
+  .code { border-radius: 10px; padding: .7rem .8rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .79rem; line-height: 1.6; overflow-x: auto; white-space: pre; }
+  .code.bad { background: #2a1a1f; color: #ffd7d7; border: 1px solid #5b2330; }
+  .code.good { background: #15241a; color: #c7f5d2; border: 1px solid #245138; }
+  .lbl { font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; margin-bottom: .3rem; }
+  .lbl.bad { color: #ff9a9a; } .lbl.good { color: #7fe0a0; }
+  .why { font-size: .9rem; margin: .7rem 0 0; }
+  .why b { color: var(--ink); }
+  .lint { font-size: .8rem; color: var(--muted); margin-top: .5rem; }
+
+  .quiz { border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem 1.4rem; margin: 1.4rem 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .quiz .q { font-weight: 650; margin: 0 0 .3rem; }
+  .quiz .ctx { font-family: ui-monospace, monospace; font-size: .8rem; background: #1e1e2e; color: #e4e4f0; padding: .5rem .7rem; border-radius: 8px; margin: .5rem 0 .7rem; white-space: pre; overflow-x: auto; }
+  .quiz .opt { display: block; width: 100%; text-align: left; cursor: pointer; border: 1px solid var(--line);
+    background: #fff; color: var(--ink); border-radius: 9px; padding: .55rem .8rem; margin: .35rem 0; font-size: .9rem;
+    font-family: ui-monospace, monospace; transition: border-color .12s, background .12s; }
+  .quiz .opt:hover { border-color: var(--accent); }
+  .quiz .opt.correct { background: var(--ok-soft); border-color: var(--ok); }
+  .quiz .opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
+  .quiz .opt:disabled { cursor: default; }
+  .quiz .fb { margin-top: .6rem; font-size: .88rem; padding: .55rem .8rem; border-radius: 8px; display: none; font-family: inherit; }
+  .quiz .fb.show { display: block; }
+  .quiz .fb.good { background: var(--ok-soft); color: var(--ok); }
+  .quiz .fb.bad { background: var(--bad-soft); color: var(--bad); }
+  .progress { font-size: .8rem; color: var(--muted); margin-top: 1.5rem; text-align: center; }
+  .ask { background: #16161d; color: #f3f3f8; border-radius: 12px; padding: 1.1rem 1.3rem; margin: 2.5rem 0 0; font-size: .95rem; }
+  .ask strong { color: #c7ccff; }
+  footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Lesson 03 · ~15 min · win: fix the 6 violations you'll hit most</div>
+  <h1>Fixing the top axe violations in Angular</h1>
+  <p class="lede">A handful of rules account for the bulk of real-world axe failures. Learn their before/after in Angular templates and you can clear most of a component by hand — exactly what your skill will automate.</p>
+
+  <div class="mission">
+    <strong>Why this:</strong> your skill's loop is <em>read → locate → fix → re-verify</em> (Lesson 1). This lesson is the <strong>fix</strong> step, in your primary stack. Each card maps an axe rule → the Angular template change. The ✎ line shows which <code>@angular-eslint</code> rule catches it at lint time — your skill's cheap first pass.
+  </div>
+
+  <!-- 1 image-alt -->
+  <div class="fixcard">
+    <div class="head">
+      <span class="rule">image-alt</span>
+      <h3>Images must have alt text</h3>
+      <span class="pill crit">critical</span>
+      <span class="sc">SC 1.1.1 · wcag2a</span>
+    </div>
+    <div class="body">
+      <div class="ba">
+        <div><div class="lbl bad">Before</div><div class="code bad">&lt;img [src]="user.avatar"&gt;</div></div>
+        <div><div class="lbl good">After</div><div class="code good">&lt;img [src]="user.avatar"
+     [alt]="user.name + ' avatar'"&gt;
+
+&lt;!-- decorative? empty alt: --&gt;
+&lt;img src="divider.svg" alt=""&gt;</div></div>
+      </div>
+      <p class="why"><b>Why:</b> screen readers announce the <code>alt</code>. Informative images need a meaningful name; purely decorative ones need <code>alt=""</code> so they're skipped. Bind dynamic alts with <code>[alt]</code>.</p>
+      <p class="lint">✎ lint: <code>@angular-eslint/template/accessibility-alt-text</code></p>
+    </div>
+  </div>
+
+  <!-- 2 button-name -->
+  <div class="fixcard">
+    <div class="head">
+      <span class="rule">button-name</span>
+      <h3>Buttons must have discernible text</h3>
+      <span class="pill crit">critical</span>
+      <span class="sc">SC 4.1.2 · wcag2a</span>
+    </div>
+    <div class="body">
+      <div class="ba">
+        <div><div class="lbl bad">Before</div><div class="code bad">&lt;button mat-icon-button
+        (click)="close()"&gt;
+  &lt;mat-icon&gt;close&lt;/mat-icon&gt;
+&lt;/button&gt;</div></div>
+        <div><div class="lbl good">After</div><div class="code good">&lt;button mat-icon-button
+        (click)="close()"
+        aria-label="Close dialog"&gt;
+  &lt;mat-icon&gt;close&lt;/mat-icon&gt;
+&lt;/button&gt;</div></div>
+      </div>
+      <p class="why"><b>Why:</b> an icon glyph has no text content, so the button's accessible name is empty. <code>aria-label</code> supplies it. Icon-only buttons are the #1 source of this violation.</p>
+      <p class="lint">✎ lint: partly caught; rendered-DOM scan (axe) is the reliable catch</p>
+    </div>
+  </div>
+
+  <!-- 3 label -->
+  <div class="fixcard">
+    <div class="head">
+      <span class="rule">label</span>
+      <h3>Form fields must have labels</h3>
+      <span class="pill crit">critical</span>
+      <span class="sc">SC 4.1.2 / 1.3.1 · wcag2a</span>
+    </div>
+    <div class="body">
+      <div class="ba">
+        <div><div class="lbl bad">Before</div><div class="code bad">&lt;input type="email"
+       [(ngModel)]="email"
+       placeholder="Email"&gt;</div></div>
+        <div><div class="lbl good">After</div><div class="code good">&lt;label for="email"&gt;Email&lt;/label&gt;
+&lt;input id="email" type="email"
+       [(ngModel)]="email"&gt;</div></div>
+      </div>
+      <p class="why"><b>Why:</b> <code>placeholder</code> is <em>not</em> a label — it vanishes on input and isn't a reliable accessible name. Associate a real <code>&lt;label for&gt;</code> ↔ <code>id</code>. (Angular Material: use <code>&lt;mat-form-field&gt;</code> with <code>&lt;mat-label&gt;</code>.)</p>
+      <p class="lint">✎ lint: <code>@angular-eslint/template/accessibility-label-has-associated-control</code></p>
+    </div>
+  </div>
+
+  <!-- 4 link-name -->
+  <div class="fixcard">
+    <div class="head">
+      <span class="rule">link-name</span>
+      <h3>Links must have discernible text</h3>
+      <span class="pill serious">serious</span>
+      <span class="sc">SC 4.1.2 / 2.4.4 · wcag2a</span>
+    </div>
+    <div class="body">
+      <div class="ba">
+        <div><div class="lbl bad">Before</div><div class="code bad">&lt;a [routerLink]="['/post', id]"&gt;
+  &lt;mat-icon&gt;arrow_forward&lt;/mat-icon&gt;
+&lt;/a&gt;</div></div>
+        <div><div class="lbl good">After</div><div class="code good">&lt;a [routerLink]="['/post', id]"
+   [attr.aria-label]="'Read ' + title"&gt;
+  &lt;mat-icon&gt;arrow_forward&lt;/mat-icon&gt;
+&lt;/a&gt;</div></div>
+      </div>
+      <p class="why"><b>Why:</b> same as buttons — icon-only links have no name. Note <code>[attr.aria-label]</code> for a bound value (plain <code>aria-label</code> for a static string). Avoid "click here" text too (2.4.4).</p>
+    </div>
+  </div>
+
+  <!-- 5 color-contrast -->
+  <div class="fixcard">
+    <div class="head">
+      <span class="rule">color-contrast</span>
+      <h3>Text must meet contrast minimums</h3>
+      <span class="pill serious">serious</span>
+      <span class="sc">SC 1.4.3 · wcag2aa</span>
+    </div>
+    <div class="body">
+      <div class="ba">
+        <div><div class="lbl bad">Before</div><div class="code bad">/* #9aa0a6 on #fff = 2.6:1 */
+.hint { color: #9aa0a6; }</div></div>
+        <div><div class="lbl good">After</div><div class="code good">/* #5f6368 on #fff = 5.7:1 */
+.hint { color: #5f6368; }</div></div>
+      </div>
+      <p class="why"><b>Why:</b> needs ≥ <b>4.5:1</b> for normal text, <b>3:1</b> for large (≥24px, or ≥18.66px bold). This is computed from rendered styles, so <em>only a DOM scan catches it</em> — lint can't. Fix in the design tokens, not per-component.</p>
+    </div>
+  </div>
+
+  <!-- 6 aria -->
+  <div class="fixcard">
+    <div class="head">
+      <span class="rule">aria-valid-attr-value / aria-required-attr</span>
+      <h3>ARIA must be valid &amp; complete</h3>
+      <span class="pill serious">serious</span>
+      <span class="sc">SC 4.1.2 · wcag2a</span>
+    </div>
+    <div class="body">
+      <div class="ba">
+        <div><div class="lbl bad">Before</div><div class="code bad">&lt;div role="checkbox"
+     (click)="toggle()"&gt;
+  Subscribe
+&lt;/div&gt;</div></div>
+        <div><div class="lbl good">After</div><div class="code good">&lt;div role="checkbox"
+     tabindex="0"
+     [attr.aria-checked]="subscribed"
+     (click)="toggle()"
+     (keydown.space)="toggle()"&gt;
+  Subscribe
+&lt;/div&gt;</div></div>
+      </div>
+      <p class="why"><b>Why:</b> a declared <code>role</code> brings required states &amp; keyboard behaviour. <code>role="checkbox"</code> needs <code>aria-checked</code>, focusability (<code>tabindex="0"</code>), and key handling. <b>Better still: use a native <code>&lt;input type="checkbox"&gt;</code></b> and skip all of it.</p>
+      <p class="lint">✎ lint: <code>@angular-eslint/template/accessibility-role-has-required-aria</code>, <code>...valid-aria</code></p>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Pattern across all six:</strong> most fixes are either <em>"give it an accessible name"</em> or <em>"use the native element instead of a div+ARIA."</em> When in doubt, reach for native HTML — it ships roles, states, and keyboard behaviour for free.
+  </div>
+
+  <h2>Practice: pick the correct fix</h2>
+  <div class="quiz" id="quiz"></div>
+  <div class="progress" id="progress">0 / 3 answered</div>
+
+  <div class="ask">
+    <strong>Ask your teacher.</strong> Want a fix for a specific violation from your own component? Paste the axe output or the template and I'll show the exact change — and which lint rule would've caught it.
+  </div>
+
+  <footer>
+    Lesson 03 · grounded in
+    <a href="https://dequeuniversity.com/rules/axe/">Deque axe rule reference</a> ·
+    <a href="https://github.com/angular-eslint/angular-eslint">@angular-eslint template a11y rules</a> ·
+    <a href="https://www.w3.org/WAI/ARIA/apg/practices/names-and-descriptions/">ARIA APG: names &amp; descriptions</a>.
+  </footer>
+</div>
+
+<script>
+  const questions = [
+    {
+      q: "axe reports button-name (critical) on this. Best fix?",
+      ctx: '<button mat-icon-button (click)="del()">\n  <mat-icon>delete</mat-icon>\n</button>',
+      opts: [
+        { t: 'Add title="delete" to the <mat-icon>', ok: false, fb: "title on the icon is unreliable and low-precedence. Put an aria-label on the BUTTON." },
+        { t: 'Add aria-label="Delete item" to the <button>', ok: true, fb: "Correct. The accessible name belongs on the interactive element (the button)." },
+        { t: 'Wrap it in a <label>', ok: false, fb: "<label> is for form controls, not buttons. Use aria-label on the button." }
+      ]
+    },
+    {
+      q: "Which input is correctly labelled?",
+      ctx: 'A) <input placeholder="Search">\nB) <label for="q">Search</label><input id="q">\nC) <input aria-label>',
+      opts: [
+        { t: "A — placeholder counts as a label", ok: false, fb: "No. placeholder is not an accessible name; it disappears on typing." },
+        { t: "B — label for/id association", ok: true, fb: "Yes. A real <label for> tied to the input's id is the robust fix." },
+        { t: "C — empty aria-label", ok: false, fb: "An empty aria-label gives no name — still a violation." }
+      ]
+    },
+    {
+      q: "color-contrast fails on body text. Why won't eslint catch it?",
+      ctx: '.muted { color:#a0a0a0; background:#fff; } /* 2.5:1 */',
+      opts: [
+        { t: "Contrast is computed from rendered styles; lint sees source only", ok: true, fb: "Right. Only a rendered-DOM scan (axe/Lighthouse) computes actual contrast. Lint can't." },
+        { t: "eslint doesn't support CSS at all", ok: false, fb: "Not the point — even with CSS, the ratio depends on the rendered cascade, which lint can't evaluate." },
+        { t: "It would, if you enable strict mode", ok: false, fb: "No lint mode computes contrast ratios. This needs the DOM-scan layer." }
+      ]
+    }
+  ];
+  const quizEl = document.getElementById('quiz');
+  const progressEl = document.getElementById('progress');
+  let answered = 0;
+  questions.forEach((item, qi) => {
+    const block = document.createElement('div');
+    if (qi > 0) block.style.marginTop = '1.7rem';
+    const q = document.createElement('p'); q.className = 'q'; q.textContent = (qi+1)+'. '+item.q; block.appendChild(q);
+    if (item.ctx) { const c = document.createElement('div'); c.className = 'ctx'; c.textContent = item.ctx; block.appendChild(c); }
+    const fb = document.createElement('div'); fb.className = 'fb';
+    item.opts.forEach(opt => {
+      const btn = document.createElement('button'); btn.className = 'opt'; btn.textContent = opt.t;
+      btn.addEventListener('click', () => {
+        if (block.dataset.done) return; block.dataset.done = '1'; answered++;
+        progressEl.textContent = answered + ' / ' + questions.length + ' answered' +
+          (answered === questions.length ? ' — you can fix the big six. Ready to build the skill?' : '');
+        [...block.querySelectorAll('.opt')].forEach(b => b.disabled = true);
+        btn.classList.add(opt.ok ? 'correct' : 'wrong');
+        if (!opt.ok) { const right = [...block.querySelectorAll('.opt')][item.opts.findIndex(o=>o.ok)]; if (right) right.classList.add('correct'); }
+        fb.textContent = opt.fb; fb.classList.add('show', opt.ok ? 'good' : 'bad');
+      });
+      block.appendChild(btn);
+    });
+    block.appendChild(fb); quizEl.appendChild(block);
+  });
+</script>
+</body>
+</html>

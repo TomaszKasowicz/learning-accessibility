@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 01 — Reading an axe violation</title>
+<style>
+  :root {
+    --ink: #16161d;
+    --muted: #5d5d72;
+    --line: #e6e6ef;
+    --accent: #4338ca;
+    --accent-soft: #eef0ff;
+    --bg: #fbfbfd;
+    --code-bg: #1e1e2e;
+    --code-ink: #e4e4f0;
+    --ok: #15803d;
+    --ok-soft: #e7f6ec;
+    --bad: #b91c1c;
+    --bad-soft: #fbeaea;
+    --crit: #b91c1c; --serious: #c2410c; --moderate: #a16207; --minor: #4d7c0f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 3rem 1.25rem 6rem;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .kicker { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  h1 { font-size: 2.1rem; line-height: 1.15; letter-spacing: -.025em; margin: .35rem 0 .5rem; }
+  .lede { font-size: 1.12rem; color: #33333f; margin: 0 0 .5rem; }
+  .mission { font-size: .9rem; color: var(--muted); background: var(--accent-soft); border-radius: 8px; padding: .7rem .9rem; margin: 1.2rem 0 2rem; }
+  h2 { font-size: 1.3rem; letter-spacing: -.01em; margin: 2.6rem 0 .6rem; }
+  h3 { font-size: 1.02rem; margin: 1.6rem 0 .4rem; }
+  p { margin: .7rem 0; }
+  a { color: var(--accent); }
+  code { background: #f0f0f7; padding: .1em .4em; border-radius: 5px; font-size: .86em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .cite { font-size: .82rem; color: var(--muted); }
+  .cite a { color: var(--muted); }
+
+  /* annotated json */
+  .json {
+    background: var(--code-bg); color: var(--code-ink); border-radius: 12px;
+    padding: 1.1rem 1.2rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .82rem; line-height: 1.7; overflow-x: auto; margin: 1rem 0;
+  }
+  .json .k { color: #9db4ff; }
+  .json .s { color: #8ce99a; }
+  .json .n { color: #ffd866; }
+  .json .c { color: #6b6b85; font-style: italic; }
+  .json .hl { background: rgba(124,131,255,.22); border-radius: 4px; padding: 0 .15em; }
+
+  table { width: 100%; border-collapse: collapse; margin: .8rem 0; font-size: .92rem; }
+  th, td { text-align: left; padding: .5rem .65rem; border-bottom: 1px solid var(--line); }
+  th { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  .pill { display: inline-block; padding: .05rem .55rem; border-radius: 999px; font-size: .74rem; font-weight: 700; color: #fff; }
+  .pill.crit { background: var(--crit); } .pill.serious { background: var(--serious); }
+  .pill.moderate { background: var(--moderate); } .pill.minor { background: var(--minor); }
+
+  .note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .95rem; }
+
+  /* quiz */
+  .quiz { border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem 1.4rem; margin: 1.4rem 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .quiz .q { font-weight: 650; margin: 0 0 .8rem; }
+  .quiz .opt {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    border-radius: 9px; padding: .6rem .8rem; margin: .4rem 0; font-size: .96rem;
+    transition: border-color .12s, background .12s;
+  }
+  .quiz .opt:hover { border-color: var(--accent); }
+  .quiz .opt.correct { background: var(--ok-soft); border-color: var(--ok); }
+  .quiz .opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
+  .quiz .opt:disabled { cursor: default; }
+  .quiz .fb { margin-top: .7rem; font-size: .9rem; padding: .6rem .8rem; border-radius: 8px; display: none; }
+  .quiz .fb.show { display: block; }
+  .quiz .fb.good { background: var(--ok-soft); color: var(--ok); }
+  .quiz .fb.bad { background: var(--bad-soft); color: var(--bad); }
+  .progress { font-size: .8rem; color: var(--muted); margin-top: 2rem; text-align: center; }
+  .ask { background: #16161d; color: #f3f3f8; border-radius: 12px; padding: 1.1rem 1.3rem; margin: 2.5rem 0 0; font-size: .95rem; }
+  .ask strong { color: #c7ccff; }
+  footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Lesson 01 · ~10 min · win: decode any axe violation</div>
+  <h1>Reading an axe violation</h1>
+  <p class="lede">Before a skill can <em>fix</em> accessibility bugs, it has to <em>read</em> what the tools report. Every tool in your pipeline (axe DevTools, Lighthouse, pa11y, Playwright+axe) speaks the same dialect underneath: the <strong>axe-core result object</strong>. Learn to read one, and you can read all of them.</p>
+
+  <div class="mission">
+    <strong>Why this, first?</strong> Your mission is a skill that runs these tools and fixes code to pass <em>axe's default ruleset</em>. The default ruleset is just a set of <em>tags</em>, and each violation is a JSON object with an <em>impact</em> and a <em>WCAG mapping</em>. This lesson makes that object legible — the literacy everything else builds on.
+  </div>
+
+  <h2>1. The default ruleset is a set of tags</h2>
+  <p>When you run axe with no restriction, it executes every rule tagged with one of these. This <em>is</em> your compliance bar:</p>
+  <table>
+    <tr><th>Tag</th><th>Means</th></tr>
+    <tr><td><code>wcag2a</code> / <code>wcag2aa</code></td><td>WCAG 2.0 Level A / AA</td></tr>
+    <tr><td><code>wcag21a</code> / <code>wcag21aa</code></td><td>WCAG 2.1 Level A / AA</td></tr>
+    <tr><td><code>wcag22aa</code></td><td>WCAG 2.2 Level AA <em>(the recent stuff you flagged)</em></td></tr>
+    <tr><td><code>best-practice</code></td><td>Not required by WCAG, but widely agreed good practice</td></tr>
+  </table>
+  <p>A rule also carries an <strong>SC tag</strong> like <code>wcag111</code>, which decodes as success criterion <strong>1.1.1</strong>. So <code>wcag143</code> → SC 1.4.3 (Contrast). That's your tag→WCAG decoder ring.</p>
+  <p class="cite">Source: <a href="https://github.com/dequelabs/axe-core/blob/develop/doc/API.md">axe-core API.md — tags table</a>. To restrict to this bar explicitly: <code>runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa','best-practice'] }</code>.</p>
+
+  <h2>2. Anatomy of one violation</h2>
+  <p>Here's a single entry from <code>results.violations</code>. The annotations call out the five fields you'll read every single time:</p>
+  <div class="json" aria-label="annotated axe violation JSON">
+<span class="k">"id"</span>: <span class="s">"button-name"</span>,            <span class="c">// ① the rule — what failed</span>
+<span class="k">"impact"</span>: <span class="s">"critical"</span>,            <span class="c">// ② severity → triage order</span>
+<span class="k">"tags"</span>: [<span class="s">"cat.name-role-value"</span>, <span class="hl"><span class="s">"wcag2a"</span></span>, <span class="hl"><span class="s">"wcag412"</span></span>],
+                                <span class="c">//    ③ standard + SC 4.1.2 (Name, Role, Value)</span>
+<span class="k">"help"</span>: <span class="s">"Buttons must have discernible text"</span>,
+<span class="k">"helpUrl"</span>: <span class="s">"https://dequeuniversity.com/rules/axe/4.10/button-name"</span>,
+                                <span class="c">// ④ how to fix it (always present)</span>
+<span class="k">"nodes"</span>: [{
+  <span class="k">"target"</span>: [<span class="s">"button.icon-btn"</span>],  <span class="c">// ⑤ which element (CSS selector)</span>
+  <span class="k">"html"</span>: <span class="s">"&lt;button class='icon-btn'&gt;&lt;svg.../&gt;&lt;/button&gt;"</span>,
+  <span class="k">"failureSummary"</span>: <span class="s">"Fix any of: element has no text; no aria-label; no aria-labelledby..."</span>
+}]
+  </div>
+  <p>Read it as a sentence: <em>"Rule <code>button-name</code> (critical, WCAG 2.0-A, SC 4.1.2) failed on <code>button.icon-btn</code> — it has no accessible name. Fix per the helpUrl."</em> That's the whole skill loop in miniature: <strong>identify → locate → fix → re-run.</strong></p>
+
+  <h2>3. Impact = your fix order</h2>
+  <table>
+    <tr><th>Impact</th><th>Triage</th></tr>
+    <tr><td><span class="pill crit">critical</span></td><td>Blocks a user entirely. Fix first.</td></tr>
+    <tr><td><span class="pill serious">serious</span></td><td>Major barrier. Fix next.</td></tr>
+    <tr><td><span class="pill moderate">moderate</span></td><td>Frustrating but workable.</td></tr>
+    <tr><td><span class="pill minor">minor</span></td><td>Polish.</td></tr>
+  </table>
+
+  <div class="note">
+    <strong>Don't forget the other buckets.</strong> A run returns four groups: <code>violations</code> (fix), <code>incomplete</code> (axe is unsure — a human must check), <code>passes</code>, and <code>inapplicable</code>. A good skill reports <code>incomplete</code> too, because that's where automated tools hand off to manual testing.
+  </div>
+
+  <h2>4. Check yourself</h2>
+  <p>Decode this real violation. Answer each — you get instant feedback.</p>
+  <div class="json" aria-label="quiz violation JSON">
+{
+  <span class="k">"id"</span>: <span class="s">"color-contrast"</span>,
+  <span class="k">"impact"</span>: <span class="s">"serious"</span>,
+  <span class="k">"tags"</span>: [<span class="s">"cat.color"</span>, <span class="s">"wcag2aa"</span>, <span class="s">"wcag143"</span>],
+  <span class="k">"help"</span>: <span class="s">"Elements must meet minimum color contrast ratio thresholds"</span>,
+  <span class="k">"nodes"</span>: [{ <span class="k">"target"</span>: [<span class="s">".cta &gt; span"</span>], <span class="k">"failureSummary"</span>: <span class="s">"Element has insufficient color contrast of 2.9:1..."</span> }]
+}
+  </div>
+
+  <div class="quiz" id="quiz"></div>
+  <div class="progress" id="progress">0 / 4 answered</div>
+
+  <div class="ask">
+    <strong>Your teacher is one message away.</strong> Stuck on a field, a tag, or how this maps to an Angular template? Ask in chat — e.g. <em>"what's SC 4.1.2 in plain English?"</em> or <em>"show me a button-name violation in an Angular component and the fix."</em>
+  </div>
+
+  <footer>
+    Lesson 01 · grounded in
+    <a href="https://github.com/dequelabs/axe-core/blob/develop/doc/API.md">axe-core API</a> ·
+    <a href="https://dequeuniversity.com/rules/axe/">Deque rule reference</a> ·
+    <a href="https://www.w3.org/TR/WCAG22/">WCAG 2.2</a>.
+    Keep <code>reference/glossary.html</code> open alongside.
+  </footer>
+</div>
+
+<script>
+  const questions = [
+    {
+      q: "Which WCAG success criterion does this violation map to?",
+      opts: [
+        { t: "SC 1.4.3 (Contrast Minimum)", ok: true,  fb: "Correct. The tag wcag143 decodes as 1.4.3 — Contrast (Minimum), Level AA." },
+        { t: "SC 1.1.1 (Non-text Content)", ok: false, fb: "That'd be tag wcag111. Here the SC tag is wcag143 → 1.4.3." },
+        { t: "SC 4.1.2 (Name, Role, Value)", ok: false, fb: "That's the button-name example. This one's tag is wcag143 → 1.4.3." }
+      ]
+    },
+    {
+      q: "What conformance level is required to satisfy it?",
+      opts: [
+        { t: "Level A", ok: false, fb: "The tag is wcag2aa, not wcag2a — so it's AA." },
+        { t: "Level AA", ok: true,  fb: "Right. tag wcag2aa = WCAG 2.0 Level AA, squarely inside your bar." },
+        { t: "Level AAA", ok: false, fb: "AAA contrast (1.4.6) is a different, stricter rule and isn't in the default ruleset." }
+      ]
+    },
+    {
+      q: "In what order should you fix this vs. a 'critical' button-name issue on the same page?",
+      opts: [
+        { t: "This one first — it's listed first", ok: false, fb: "Order in the array isn't priority. Impact is. critical > serious." },
+        { t: "The button-name issue first (critical beats serious)", ok: true, fb: "Yes. Triage by impact: critical → serious → moderate → minor." },
+        { t: "Doesn't matter, both are violations", ok: false, fb: "Both must be fixed, but impact tells you what blocks users most — fix critical first." }
+      ]
+    },
+    {
+      q: "Where do you click for the official 'how to fix' guidance?",
+      opts: [
+        { t: "failureSummary", ok: false, fb: "Close — failureSummary says what's wrong, but the canonical fix guide is the helpUrl (Deque University)." },
+        { t: "helpUrl", ok: true, fb: "Correct. Every violation carries a helpUrl to dequeuniversity.com/rules/axe/<ver>/<rule-id> with fix recipes." },
+        { t: "target", ok: false, fb: "target only locates the element. The fix guide lives at helpUrl." }
+      ]
+    }
+  ];
+
+  const quizEl = document.getElementById('quiz');
+  const progressEl = document.getElementById('progress');
+  let answered = 0;
+
+  questions.forEach((item, qi) => {
+    const block = document.createElement('div');
+    if (qi > 0) block.style.marginTop = '1.6rem';
+    const q = document.createElement('p');
+    q.className = 'q';
+    q.textContent = (qi + 1) + '. ' + item.q;
+    block.appendChild(q);
+
+    const fb = document.createElement('div');
+    fb.className = 'fb';
+
+    item.opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.textContent = opt.t;
+      btn.addEventListener('click', () => {
+        if (block.dataset.done) return;
+        block.dataset.done = '1';
+        answered++;
+        progressEl.textContent = answered + ' / ' + questions.length + ' answered' +
+          (answered === questions.length ? ' — nice work. Tell your teacher you\u2019re ready for fixes.' : '');
+        [...block.querySelectorAll('.opt')].forEach(b => b.disabled = true);
+        btn.classList.add(opt.ok ? 'correct' : 'wrong');
+        if (!opt.ok) {
+          const right = [...block.querySelectorAll('.opt')][item.opts.findIndex(o => o.ok)];
+          if (right) right.classList.add('correct');
+        }
+        fb.textContent = opt.fb;
+        fb.classList.add('show', opt.ok ? 'good' : 'bad');
+      });
+      block.appendChild(btn);
+    });
+
+    block.appendChild(fb);
+    quizEl.appendChild(block);
+  });
+</script>
+</body>
+</html>

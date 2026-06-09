@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 04 — The a11y tooling pipeline</title>
+<style>
+  :root {
+    --ink: #16161d; --muted: #5d5d72; --line: #e6e6ef;
+    --accent: #4338ca; --accent-soft: #eef0ff; --bg: #fbfbfd;
+    --ok: #15803d; --ok-soft: #e7f6ec; --bad: #b91c1c; --bad-soft: #fbeaea;
+    --lint: #0e7490; --lint-soft: #e0f2f7;
+    --scan: #4338ca; --scan-soft: #eef0ff;
+    --manual: #b45309; --manual-soft: #fdf2e3;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 3rem 1.25rem 6rem; }
+  .wrap { max-width: 800px; margin: 0 auto; }
+  .kicker { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  h1 { font-size: 2.05rem; line-height: 1.15; letter-spacing: -.025em; margin: .35rem 0 .5rem; }
+  .lede { font-size: 1.1rem; color: #33333f; margin: 0; }
+  .mission { font-size: .9rem; color: var(--muted); background: var(--accent-soft); border-radius: 8px; padding: .7rem .9rem; margin: 1.2rem 0 2rem; }
+  h2 { font-size: 1.3rem; letter-spacing: -.01em; margin: 2.6rem 0 .4rem; }
+  p { margin: .7rem 0; }
+  a { color: var(--accent); }
+  code { background: #f0f0f7; padding: .1em .4em; border-radius: 5px; font-size: .85em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .cite { font-size: .82rem; color: var(--muted); } .cite a { color: var(--muted); }
+  .note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .95rem; }
+
+  /* funnel */
+  .funnel { margin: 1.4rem 0; }
+  .layer { border-radius: 12px; padding: .9rem 1.1rem; margin: .55rem 0; border: 1px solid var(--line); }
+  .layer.lint { background: var(--lint-soft); border-color: #b6e0ec; }
+  .layer.scan { background: var(--scan-soft); border-color: #cdd3ff; }
+  .layer.manual { background: var(--manual-soft); border-color: #f2dcb0; }
+  .layer .top { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+  .layer h3 { margin: 0; font-size: 1.05rem; }
+  .layer .when { font-size: .74rem; font-weight: 700; letter-spacing: .04em; padding: .08rem .55rem; border-radius: 999px; color: #fff; }
+  .when.lint { background: var(--lint); } .when.scan { background: var(--scan); } .when.manual { background: var(--manual); }
+  .layer .tools { font-size: .82rem; color: var(--muted); margin-top: .2rem; }
+  .layer .tools b { color: var(--ink); }
+  .layer .desc { font-size: .94rem; margin: .5rem 0 0; }
+  .layer .catch { font-size: .85rem; margin-top: .45rem; }
+  .layer .catch .y { color: var(--ok); font-weight: 600; }
+  .layer .catch .n { color: var(--bad); font-weight: 600; }
+  .arrow { text-align: center; color: var(--muted); font-size: 1.1rem; line-height: 1; margin: -.1rem 0; }
+
+  table { width: 100%; border-collapse: collapse; margin: .8rem 0; font-size: .9rem; }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  .tick { color: var(--ok); font-weight: 700; } .cross { color: var(--bad); font-weight: 700; }
+  .partial { color: var(--manual); font-weight: 700; }
+
+  .quiz { border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem 1.4rem; margin: 1.4rem 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .quiz .q { font-weight: 650; margin: 0 0 .6rem; }
+  .quiz .opt { display: block; width: 100%; text-align: left; cursor: pointer; border: 1px solid var(--line);
+    background: #fff; color: var(--ink); border-radius: 9px; padding: .55rem .8rem; margin: .35rem 0; font-size: .94rem; transition: border-color .12s, background .12s; }
+  .quiz .opt:hover { border-color: var(--accent); }
+  .quiz .opt.correct { background: var(--ok-soft); border-color: var(--ok); }
+  .quiz .opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
+  .quiz .opt:disabled { cursor: default; }
+  .quiz .fb { margin-top: .6rem; font-size: .88rem; padding: .55rem .8rem; border-radius: 8px; display: none; }
+  .quiz .fb.show { display: block; }
+  .quiz .fb.good { background: var(--ok-soft); color: var(--ok); }
+  .quiz .fb.bad { background: var(--bad-soft); color: var(--bad); }
+  .progress { font-size: .8rem; color: var(--muted); margin-top: 1.5rem; text-align: center; }
+  .ask { background: #16161d; color: #f3f3f8; border-radius: 12px; padding: 1.1rem 1.3rem; margin: 2.5rem 0 0; font-size: .95rem; }
+  .ask strong { color: #c7ccff; }
+  footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Lesson 04 · ~12 min · win: know which tool to reach for, when</div>
+  <h1>The a11y tooling pipeline</h1>
+  <p class="lede">No single tool finds every bug. Automated tools catch only <strong>~30–50%</strong> of WCAG issues. The skill works because it <em>layers</em> tools so each catches what the cheaper one missed — and hands the rest to a human.</p>
+
+  <div class="mission">
+    <strong>Why this:</strong> your skill orchestrates several tools. To orchestrate them well you must know each one's <em>job</em> and <em>blind spot</em>. This lesson is the map: three layers, cheapest-and-earliest first, each a wider net than the last.
+  </div>
+
+  <h2>1. The three layers (a funnel)</h2>
+  <p>Run them in this order. Each layer is slower but catches a class of bug the previous one is blind to.</p>
+
+  <div class="funnel">
+    <div class="layer lint">
+      <div class="top"><h3>① Static analysis (lint)</h3><span class="when lint">editor + CI · sub-second</span></div>
+      <div class="tools">Tools: <b>@angular-eslint/template/accessibility-*</b> (Angular), <b>eslint-plugin-jsx-a11y</b> (React)</div>
+      <div class="desc">Reads source/JSX/templates without rendering. Zero runtime cost, instant editor feedback.</div>
+      <div class="catch"><span class="y">Catches:</span> missing <code>alt</code>, label-less controls, invalid ARIA attrs/roles, positive <code>tabindex</code>, click-without-key handlers.
+        <br><span class="n">Misses:</span> anything computed at runtime — contrast, dynamic ARIA state, focus order, whether a name is <em>meaningful</em>.</div>
+    </div>
+    <div class="arrow">▼</div>
+    <div class="layer scan">
+      <div class="top"><h3>② Rendered-DOM scan (axe engine)</h3><span class="when scan">CI / test run · seconds</span></div>
+      <div class="tools">Tools: <b>@axe-core/playwright</b>, <b>pa11y / pa11y-ci</b>, axe DevTools, <b>Lighthouse</b> (a subset of axe)</div>
+      <div class="desc">Runs axe-core against the real accessibility tree after render. This is where your "pass axe default rules" bar is enforced. (Remember L2: add the <code>wcag22aa</code> tag.)</div>
+      <div class="catch"><span class="y">Catches:</span> computed color contrast, missing accessible names on rendered components, ARIA state mismatches, duplicate ids, landmark/heading structure.
+        <br><span class="n">Misses:</span> is the alt text <em>correct</em>? is focus order logical? does the keyboard flow make sense? does it <em>sound</em> right in a screen reader?</div>
+    </div>
+    <div class="arrow">▼</div>
+    <div class="layer manual">
+      <div class="top"><h3>③ Manual verification (human)</h3><span class="when manual">before merge · minutes</span></div>
+      <div class="tools">Tools: <b>keyboard only</b> (Tab/Shift-Tab/Enter/Space/Esc/arrows), <b>screen reader</b> (VoiceOver on macOS, NVDA on Windows)</div>
+      <div class="desc">The only layer that judges <em>meaning</em> and <em>experience</em>. Required for the 5 non-automatable WCAG 2.2 criteria (L2) and for confirming a fix actually helps.</div>
+      <div class="catch"><span class="y">Catches:</span> meaningless/wrong names, illogical focus order, keyboard traps, drag-only interactions, focus hidden behind sticky bars, "is this usable?"
+        <br><span class="n">Misses:</span> nothing automatable — but it's slow, so let layers ① and ② clear the cheap stuff first.</div>
+    </div>
+  </div>
+
+  <h2>2. Coverage matrix</h2>
+  <table>
+    <tr><th>Bug</th><th>Lint ①</th><th>DOM scan ②</th><th>Manual ③</th></tr>
+    <tr><td>Missing <code>alt</code> attribute</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+    <tr><td><code>alt</code> present but wrong/meaningless</td><td class="cross">✗</td><td class="cross">✗</td><td class="tick">✓</td></tr>
+    <tr><td>Low color contrast</td><td class="cross">✗</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+    <tr><td>Icon button with no name (rendered)</td><td class="partial">~</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+    <tr><td>Illogical focus / tab order</td><td class="cross">✗</td><td class="cross">✗</td><td class="tick">✓</td></tr>
+    <tr><td>Keyboard trap</td><td class="cross">✗</td><td class="cross">✗</td><td class="tick">✓</td></tr>
+    <tr><td>Target Size 2.5.8</td><td class="cross">✗</td><td class="tick">✓ (tag on)</td><td class="tick">✓</td></tr>
+    <tr><td>Drag-only interaction 2.5.7</td><td class="cross">✗</td><td class="cross">✗</td><td class="tick">✓</td></tr>
+  </table>
+  <p class="cite">✓ catches · ~ partial · ✗ blind. Sources: <a href="https://web.dev/articles/accessibility-auditing-react">web.dev: auditing</a> · <a href="https://sujeet.pro/articles/accessibility-testing-tooling">a11y tooling workflow</a> · <a href="https://github.com/dequelabs/axe-core">axe-core</a>.</p>
+
+  <div class="note">
+    <strong>Two clarifications people get wrong:</strong><br>
+    • <b>Lighthouse is not a separate engine</b> — its a11y audit runs a <em>subset</em> of axe-core rules and weights them into a score. Use it for a quick page signal, not as your gate.<br>
+    • <b>pa11y can run two engines</b> (axe-core <em>and</em> HTML CodeSniffer) side by side — useful for CI cross-checking, but it still won't replace the manual layer.
+  </div>
+
+  <h2>3. Where this lands in your skill</h2>
+  <p>Your WCAG-fixing skill mirrors the funnel: run lint → auto-fix what's safe; run axe (with 2.2 tag) → fix violations using L3 patterns; then <em>emit a manual checklist</em> for the human (the items only layer ③ can confirm). It should never claim "compliant" from layers ① + ② alone.</p>
+
+  <h2>4. Check yourself</h2>
+  <div class="quiz" id="quiz"></div>
+  <div class="progress" id="progress">0 / 4 answered</div>
+
+  <div class="ask">
+    <strong>Ask your teacher.</strong> Want the exact CI wiring (editor lint + Playwright+axe gate + a manual checklist template)? That's a natural lead-in to scaffolding the skill — just ask.
+  </div>
+
+  <footer>
+    Lesson 04 · grounded in
+    <a href="https://web.dev/articles/accessibility-auditing-react">web.dev</a> ·
+    <a href="https://sujeet.pro/articles/accessibility-testing-tooling">tooling workflow</a> ·
+    <a href="https://developer.chrome.com/docs/lighthouse/accessibility/scoring">Lighthouse scoring</a> ·
+    <a href="https://github.com/pa11y/pa11y">pa11y</a>.
+  </footer>
+</div>
+
+<script>
+  const questions = [
+    {
+      q: "Your component has an <img> with alt=\"image123.png\". Which layer catches that the alt is meaningless?",
+      opts: [
+        { t: "Lint — it checks alt text", ok: false, fb: "Lint only checks the attribute EXISTS, not whether it's meaningful." },
+        { t: "DOM scan (axe) — it reads the name", ok: false, fb: "axe confirms a name is present, but can't judge if it's a good description." },
+        { t: "Manual — only a human judges meaning", ok: true, fb: "Right. Meaning/quality of names is the manual layer's job." }
+      ]
+    },
+    {
+      q: "Why run lint before the axe DOM scan?",
+      opts: [
+        { t: "Lint is cheaper/faster and catches obvious issues at write-time", ok: true, fb: "Yes — cheapest, earliest feedback; clears the obvious stuff before the slower layer." },
+        { t: "Lint catches everything axe does", ok: false, fb: "No — lint is blind to runtime issues like contrast and dynamic ARIA." },
+        { t: "axe can't run in CI", ok: false, fb: "axe runs great in CI (Playwright/pa11y). Order is about cost/speed, not capability." }
+      ]
+    },
+    {
+      q: "Is a green Lighthouse accessibility score proof of WCAG compliance?",
+      opts: [
+        { t: "Yes, 100 means compliant", ok: false, fb: "No. Lighthouse runs only a SUBSET of axe rules and can't do manual checks." },
+        { t: "No — it's a subset of axe + no manual layer", ok: true, fb: "Correct. Treat it as a quick signal, never as the gate." },
+        { t: "Only if you also run eslint", ok: false, fb: "Even lint + Lighthouse miss focus order, meaning, and the 2.2 manual criteria." }
+      ]
+    },
+    {
+      q: "What should your skill do after layers ① and ② pass?",
+      opts: [
+        { t: "Declare the code WCAG compliant", ok: false, fb: "Automated layers catch ~30-50%. You can't claim compliance from them alone." },
+        { t: "Emit a manual checklist for the human (layer ③)", ok: true, fb: "Exactly — hand off the non-automatable checks rather than over-claiming." },
+        { t: "Re-run axe a second time", ok: false, fb: "Re-running the same engine finds the same things. You need the human layer next." }
+      ]
+    }
+  ];
+  const quizEl = document.getElementById('quiz');
+  const progressEl = document.getElementById('progress');
+  let answered = 0;
+  questions.forEach((item, qi) => {
+    const block = document.createElement('div');
+    if (qi > 0) block.style.marginTop = '1.6rem';
+    const q = document.createElement('p'); q.className = 'q'; q.textContent = (qi+1)+'. '+item.q; block.appendChild(q);
+    const fb = document.createElement('div'); fb.className = 'fb';
+    item.opts.forEach(opt => {
+      const btn = document.createElement('button'); btn.className = 'opt'; btn.textContent = opt.t;
+      btn.addEventListener('click', () => {
+        if (block.dataset.done) return; block.dataset.done = '1'; answered++;
+        progressEl.textContent = answered + ' / ' + questions.length + ' answered' +
+          (answered === questions.length ? ' — you understand the pipeline. Time to build the skill.' : '');
+        [...block.querySelectorAll('.opt')].forEach(b => b.disabled = true);
+        btn.classList.add(opt.ok ? 'correct' : 'wrong');
+        if (!opt.ok) { const right = [...block.querySelectorAll('.opt')][item.opts.findIndex(o=>o.ok)]; if (right) right.classList.add('correct'); }
+        fb.textContent = opt.fb; fb.classList.add('show', opt.ok ? 'good' : 'bad');
+      });
+      block.appendChild(btn);
+    });
+    block.appendChild(fb); quizEl.appendChild(block);
+  });
+</script>
+</body>
+</html>

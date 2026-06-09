@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 02 — WCAG 2.2's new A/AA criteria &amp; what axe can (and can't) catch</title>
+<style>
+  :root {
+    --ink: #16161d; --muted: #5d5d72; --line: #e6e6ef;
+    --accent: #4338ca; --accent-soft: #eef0ff; --bg: #fbfbfd;
+    --code-bg: #1e1e2e; --code-ink: #e4e4f0;
+    --ok: #15803d; --ok-soft: #e7f6ec; --bad: #b91c1c; --bad-soft: #fbeaea;
+    --auto: #15803d; --auto-soft: #e7f6ec; --manual: #b45309; --manual-soft: #fdf2e3;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 3rem 1.25rem 6rem; }
+  .wrap { max-width: 780px; margin: 0 auto; }
+  .kicker { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  h1 { font-size: 2.05rem; line-height: 1.15; letter-spacing: -.025em; margin: .35rem 0 .5rem; }
+  .lede { font-size: 1.1rem; color: #33333f; margin: 0; }
+  .mission { font-size: .9rem; color: var(--muted); background: var(--accent-soft); border-radius: 8px; padding: .7rem .9rem; margin: 1.2rem 0 2rem; }
+  h2 { font-size: 1.3rem; letter-spacing: -.01em; margin: 2.6rem 0 .6rem; }
+  p { margin: .7rem 0; }
+  a { color: var(--accent); }
+  code { background: #f0f0f7; padding: .1em .4em; border-radius: 5px; font-size: .86em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .cite { font-size: .82rem; color: var(--muted); }
+  .cite a { color: var(--muted); }
+  .crit-note { background: var(--bad-soft); border-left: 3px solid var(--bad); padding: .85rem 1.05rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; }
+  .crit-note strong { color: var(--bad); }
+  .note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .95rem; }
+
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.15rem; margin: .8rem 0; background: #fff; }
+  .card h3 { margin: 0 0 .15rem; font-size: 1.05rem; }
+  .card .lv { font-size: .72rem; font-weight: 700; letter-spacing: .05em; padding: .05rem .5rem; border-radius: 999px; margin-left: .5rem; vertical-align: middle; }
+  .lv.a { background: #ede9fe; color: #5b21b6; }
+  .lv.aa { background: #dbeafe; color: #1e40af; }
+  .badge { display: inline-block; font-size: .72rem; font-weight: 700; padding: .12rem .55rem; border-radius: 999px; margin-top: .5rem; }
+  .badge.auto { background: var(--auto-soft); color: var(--auto); }
+  .badge.manual { background: var(--manual-soft); color: var(--manual); }
+  .card p { margin: .45rem 0 0; font-size: .96rem; }
+  .fix { font-size: .9rem; color: #333; }
+  .fix b { color: var(--ink); }
+
+  .json { background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 1rem 1.15rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .82rem; line-height: 1.7; overflow-x: auto; margin: 1rem 0; }
+  .json .k { color: #9db4ff; } .json .s { color: #8ce99a; } .json .c { color: #6b6b85; font-style: italic; }
+
+  table { width: 100%; border-collapse: collapse; margin: .8rem 0; font-size: .9rem; }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+
+  /* quiz */
+  .quiz { border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem 1.4rem; margin: 1.4rem 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .quiz .q { font-weight: 650; margin: 0 0 .6rem; }
+  .quiz .opt { display: block; width: 100%; text-align: left; cursor: pointer; border: 1px solid var(--line);
+    background: #fff; color: var(--ink); border-radius: 9px; padding: .55rem .8rem; margin: .35rem 0; font-size: .95rem; transition: border-color .12s, background .12s; }
+  .quiz .opt:hover { border-color: var(--accent); }
+  .quiz .opt.correct { background: var(--ok-soft); border-color: var(--ok); }
+  .quiz .opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
+  .quiz .opt:disabled { cursor: default; }
+  .quiz .fb { margin-top: .6rem; font-size: .89rem; padding: .55rem .8rem; border-radius: 8px; display: none; }
+  .quiz .fb.show { display: block; }
+  .quiz .fb.good { background: var(--ok-soft); color: var(--ok); }
+  .quiz .fb.bad { background: var(--bad-soft); color: var(--bad); }
+  .progress { font-size: .8rem; color: var(--muted); margin-top: 1.5rem; text-align: center; }
+  .ask { background: #16161d; color: #f3f3f8; border-radius: 12px; padding: 1.1rem 1.3rem; margin: 2.5rem 0 0; font-size: .95rem; }
+  .ask strong { color: #c7ccff; }
+  footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Lesson 02 · ~12 min · win: master the 2.2 additions + know axe's blind spots</div>
+  <h1>WCAG 2.2's new criteria — and what axe can&rsquo;t catch</h1>
+  <p class="lede">WCAG 2.2 (Oct 2023) added <strong>9 success criteria</strong> and removed one (4.1.1 Parsing). Six of the new ones are Level A/AA — inside your bar. This is the "recent rules" gap you flagged. The twist that matters for your skill: <strong>axe can only automate one of them.</strong></p>
+
+  <div class="mission">
+    <strong>Why this matters for the skill:</strong> you said the bar is "axe default rules." But axe's defaults <em>exclude</em> WCAG 2.2 rules, and 5 of the 6 new A/AA criteria can't be automated at all. A skill that only runs axe defaults will silently pass code that violates WCAG 2.2. You need to (a) opt in to the 2.2 rule, and (b) add a manual checklist. This lesson gives you both.
+  </div>
+
+  <h2>1. The six new A/AA criteria</h2>
+  <p>Each card: what it means, how you fix it, and whether axe can detect it automatically.</p>
+
+  <div class="card">
+    <h3>3.2.6 Consistent Help<span class="lv a">A</span></h3>
+    <p>If a help mechanism (contact link, chat, FAQ) repeats across pages, it must appear in the <b>same relative order</b> every time.</p>
+    <p class="fix"><b>Fix:</b> put help links in a shared layout/component so position is consistent. Angular: a shared header/footer component, not per-page placement.</p>
+    <span class="badge manual">Manual only — axe can't judge "same order across pages"</span>
+  </div>
+
+  <div class="card">
+    <h3>3.3.7 Redundant Entry<span class="lv a">A</span></h3>
+    <p>Don&rsquo;t make users re-enter info they already gave earlier in the same process — auto-populate it or let them pick it.</p>
+    <p class="fix"><b>Fix:</b> carry form state across multi-step flows (e.g. "billing same as shipping" checkbox, prefilled fields).</p>
+    <span class="badge manual">Manual only — needs flow context</span>
+  </div>
+
+  <div class="card">
+    <h3>2.4.11 Focus Not Obscured (Minimum)<span class="lv aa">AA</span></h3>
+    <p>When an element receives keyboard focus, it must not be <b>entirely</b> hidden by other content (sticky headers, cookie banners, toasts).</p>
+    <p class="fix"><b>Fix:</b> use <code>scroll-margin</code>, avoid covering focused content with fixed overlays; ensure sticky bars don&rsquo;t fully hide the focused control.</p>
+    <span class="badge manual">Manual / DevTools Pro — not in axe-core</span>
+  </div>
+
+  <div class="card">
+    <h3>2.5.7 Dragging Movements<span class="lv aa">AA</span></h3>
+    <p>Anything done by dragging must have a <b>single-pointer alternative</b> (tap/click) — unless dragging is essential.</p>
+    <p class="fix"><b>Fix:</b> add click/keyboard alternatives to drag-to-reorder, sliders, drag-and-drop (e.g. up/down buttons, +/- steppers).</p>
+    <span class="badge manual">Manual only — intent can't be inferred</span>
+  </div>
+
+  <div class="card">
+    <h3>2.5.8 Target Size (Minimum)<span class="lv aa">AA</span></h3>
+    <p>Pointer targets must be at least <b>24&times;24 CSS px</b>, or have enough spacing that a 24px circle around each doesn&rsquo;t overlap a neighbour.</p>
+    <p class="fix"><b>Fix:</b> enlarge small icon buttons / inline links; add padding or spacing. The classic offender: tightly packed icon-only buttons.</p>
+    <span class="badge auto">&#10003; axe CAN auto-detect — rule <code>target-size</code> (the only 2.2 rule)</span>
+  </div>
+
+  <div class="card">
+    <h3>3.3.8 Accessible Authentication (Minimum)<span class="lv aa">AA</span></h3>
+    <p>Don&rsquo;t force a <b>cognitive function test</b> (memorise/transcribe a code, solve a puzzle) to log in, unless there&rsquo;s an alternative.</p>
+    <p class="fix"><b>Fix:</b> allow password managers / paste in fields; support passkeys/OAuth; don&rsquo;t block autofill on auth inputs.</p>
+    <span class="badge manual">Manual only</span>
+  </div>
+
+  <p class="cite">Sources: <a href="https://www.w3.org/WAI/standards-guidelines/wcag/new-in-22/">W3C What&rsquo;s New in 2.2</a> · <a href="https://dequeuniversity.com/resources/wcag-2.2/">Deque WCAG 2.2 (fixes + code)</a>. (The other 3 new criteria — 2.4.12, 2.4.13, 3.3.9 — are AAA, out of scope for now.)</p>
+
+  <h2>2. The automation reality (this is the lesson)</h2>
+  <table>
+    <tr><th>New A/AA criterion</th><th>axe-core auto-detect?</th></tr>
+    <tr><td>2.5.8 Target Size</td><td><b style="color:var(--auto)">Yes</b> — <code>target-size</code> rule</td></tr>
+    <tr><td>3.2.6 Consistent Help</td><td>No — manual</td></tr>
+    <tr><td>3.3.7 Redundant Entry</td><td>No — manual</td></tr>
+    <tr><td>2.4.11 Focus Not Obscured</td><td>No — manual (axe DevTools Pro only)</td></tr>
+    <tr><td>2.5.7 Dragging Movements</td><td>No — manual</td></tr>
+    <tr><td>3.3.8 Accessible Auth</td><td>No — manual</td></tr>
+  </table>
+  <p class="cite">Deque: <a href="https://www.deque.com/blog/axe-core-4-5-first-wcag-2-2-support-and-more/">"because how few WCAG 2.2 criteria can be automated without false positives, <code>target-size</code> is likely the only WCAG 2.2 rule in axe-core."</a></p>
+
+  <div class="crit-note">
+    <strong>Gotcha your skill must handle:</strong> axe-core ships WCAG 2.2 rules <b>disabled by default</b>. Running plain <code>axe.run()</code> will <b>not</b> test <code>target-size</code>. <b>And the <code>wcag22aa</code> tag alone won't run it either</b> — a tag only <em>selects among enabled rules</em>; it doesn't flip a disabled rule on. You must enable the rule explicitly:
+    <div class="json">
+  <span class="c">// The tag SELECTS; rules:{...} ENABLES. You need both.</span>
+axe.run(document, {
+  runOnly: { type: <span class="s">'tag'</span>,
+    values: [<span class="s">'wcag2a'</span>,<span class="s">'wcag2aa'</span>,<span class="s">'wcag21a'</span>,<span class="s">'wcag21aa'</span>,<span class="s">'wcag22aa'</span>,<span class="s">'best-practice'</span>] },
+  rules: { <span class="s">'target-size'</span>: { enabled: <span class="k">true</span> } }   <span class="c">// &lt;-- this is what turns it on</span>
+});
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Engine vs. product — reconciling what you may have seen:</strong> the "off by default" rule above is true of the raw <code>axe-core</code> <em>engine</em> (what <code>@axe-core/playwright</code> runs) — empirically verified on axe-core 4.11.x: <code>target-size</code> is the only <code>wcag22aa</code> rule and it ships <code>enabled: false</code>. Some <b>product layers</b> — the axe DevTools browser extension / Pro, and some CLI wrappers — ship their own config and may default WCAG 2.2 <em>on</em>. So if a DevTools UI shows <code>target-size</code> on out of the box, that's the product's default, not the engine's, and it does <b>not</b> carry into your Playwright run. Enabling it explicitly (above) is correct and idempotent either way. <span class="cite">Verified: <a href="https://github.com/dequelabs/axe-core/blob/develop/doc/rule-descriptions.md">rule-descriptions.md</a> + local <code>axe-core._audit.rules</code> check.</span>
+  </div>
+
+  <div class="note">
+    <strong>Design takeaway for the skill:</strong> "pass axe" ≠ "WCAG 2.2 compliant." Your skill needs two arms: an <b>automated</b> arm (axe with the <code>wcag22aa</code> tag enabled) and a <b>manual checklist</b> arm prompting a human for the 5 non-automatable criteria.
+  </div>
+
+  <h2>3. Check yourself</h2>
+  <div class="quiz" id="quiz"></div>
+  <div class="progress" id="progress">0 / 4 answered</div>
+
+  <div class="ask">
+    <strong>Ask your teacher.</strong> Want the manual-checklist arm written out as a reusable reference? Or a concrete Angular example of a <code>target-size</code> fix (icon button too small)? Say the word in chat.
+  </div>
+
+  <footer>
+    Lesson 02 · grounded in
+    <a href="https://www.w3.org/WAI/standards-guidelines/wcag/new-in-22/">W3C 2.2</a> ·
+    <a href="https://dequeuniversity.com/resources/wcag-2.2/">Deque 2.2</a> ·
+    <a href="https://github.com/dequelabs/axe-core/blob/HEAD/doc/rule-descriptions.md">axe rule descriptions</a> ·
+    <a href="https://www.deque.com/blog/axe-core-4-5-first-wcag-2-2-support-and-more/">axe 4.5 blog</a>.
+  </footer>
+</div>
+
+<script>
+  const questions = [
+    {
+      q: "You run plain axe.run() on a page with 16px icon buttons. Does it flag a Target Size (2.5.8) violation?",
+      opts: [
+        { t: "Yes — target-size is a default rule", ok: false, fb: "No. WCAG 2.2 rules are disabled by default in axe-core. You must add the wcag22aa tag or enable the rule." },
+        { t: "No — WCAG 2.2 rules are off by default; you must opt in", ok: true, fb: "Exactly. And note: you must ENABLE it via rules:{'target-size':{enabled:true}} — the wcag22aa tag alone won't run a disabled-by-default rule." },
+        { t: "No — target-size doesn't exist in axe", ok: false, fb: "It does exist — it's the one WCAG 2.2 rule axe-core has. It's just off by default." }
+      ]
+    },
+    {
+      q: "Which of these can axe-core NOT automatically detect?",
+      opts: [
+        { t: "Target Size (2.5.8)", ok: false, fb: "axe CAN detect this one — it's the lone 2.2 automated rule." },
+        { t: "Dragging Movements (2.5.7)", ok: true, fb: "Right. Intent (is dragging essential? is there an alternative?) can't be inferred — manual only." },
+        { t: "Color contrast", ok: false, fb: "That's a 2.0 rule (color-contrast) axe detects well — not a 2.2 criterion." }
+      ]
+    },
+    {
+      q: "A multi-step checkout re-asks for the email entered in step 1. Which new criterion is at risk?",
+      opts: [
+        { t: "3.3.7 Redundant Entry", ok: true, fb: "Correct. Don't make users re-enter info already provided in the same process — prefill or let them select it." },
+        { t: "2.4.11 Focus Not Obscured", ok: false, fb: "That's about focused elements being hidden, not re-entered data. This is 3.3.7." },
+        { t: "3.2.6 Consistent Help", ok: false, fb: "That's about help mechanisms appearing in consistent order. Re-entered data is 3.3.7." }
+      ]
+    },
+    {
+      q: "What's the right conclusion for your WCAG-fixing skill?",
+      opts: [
+        { t: "Running axe defaults is enough for WCAG 2.2 AA", ok: false, fb: "No — defaults exclude 2.2, and 5/6 new A/AA criteria aren't automatable at all." },
+        { t: "Enable the wcag22aa tag AND add a manual checklist for the 5 non-automatable criteria", ok: true, fb: "Yes. Two arms: automated (with 2.2 tag on) + human checklist. That's the skill's design." },
+        { t: "Skip WCAG 2.2 since tools can't fully check it", ok: false, fb: "It's the current standard and your bar — you handle it with automation + manual checks, not by skipping." }
+      ]
+    }
+  ];
+
+  const quizEl = document.getElementById('quiz');
+  const progressEl = document.getElementById('progress');
+  let answered = 0;
+  questions.forEach((item, qi) => {
+    const block = document.createElement('div');
+    if (qi > 0) block.style.marginTop = '1.6rem';
+    const q = document.createElement('p');
+    q.className = 'q';
+    q.textContent = (qi + 1) + '. ' + item.q;
+    block.appendChild(q);
+    const fb = document.createElement('div');
+    fb.className = 'fb';
+    item.opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.textContent = opt.t;
+      btn.addEventListener('click', () => {
+        if (block.dataset.done) return;
+        block.dataset.done = '1';
+        answered++;
+        progressEl.textContent = answered + ' / ' + questions.length + ' answered' +
+          (answered === questions.length ? ' — you\u2019ve closed the 2.2 gap. Ask about building the skill next.' : '');
+        [...block.querySelectorAll('.opt')].forEach(b => b.disabled = true);
+        btn.classList.add(opt.ok ? 'correct' : 'wrong');
+        if (!opt.ok) {
+          const right = [...block.querySelectorAll('.opt')][item.opts.findIndex(o => o.ok)];
+          if (right) right.classList.add('correct');
+        }
+        fb.textContent = opt.fb;
+        fb.classList.add('show', opt.ok ? 'good' : 'bad');
+      });
+      block.appendChild(btn);
+    });
+    block.appendChild(fb);
+    quizEl.appendChild(block);
+  });
+</script>
+</body>
+</html>

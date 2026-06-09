@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 05 — Hands-on: scanning a page with @axe-core/playwright</title>
+<style>
+  :root {
+    --ink: #16161d; --muted: #5d5d72; --line: #e6e6ef;
+    --accent: #4338ca; --accent-soft: #eef0ff; --bg: #fbfbfd;
+    --code-bg: #1e1e2e; --code-ink: #e4e4f0;
+    --ok: #15803d; --ok-soft: #e7f6ec; --bad: #b91c1c; --bad-soft: #fbeaea;
+    --term-bg: #0f1117;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 3rem 1.25rem 6rem; }
+  .wrap { max-width: 800px; margin: 0 auto; }
+  .kicker { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  h1 { font-size: 2.05rem; line-height: 1.15; letter-spacing: -.025em; margin: .35rem 0 .5rem; }
+  .lede { font-size: 1.1rem; color: #33333f; margin: 0; }
+  .mission { font-size: .9rem; color: var(--muted); background: var(--accent-soft); border-radius: 8px; padding: .7rem .9rem; margin: 1.2rem 0 2rem; }
+  h2 { font-size: 1.3rem; letter-spacing: -.01em; margin: 2.6rem 0 .4rem; }
+  h3 { font-size: 1rem; margin: 1.4rem 0 .3rem; }
+  p { margin: .7rem 0; }
+  a { color: var(--accent); }
+  code { background: #f0f0f7; padding: .1em .4em; border-radius: 5px; font-size: .85em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .cite { font-size: .82rem; color: var(--muted); } .cite a { color: var(--muted); }
+  .step { display: inline-block; width: 1.6rem; height: 1.6rem; line-height: 1.6rem; text-align: center;
+    background: var(--accent); color: #fff; border-radius: 50%; font-size: .85rem; font-weight: 700; margin-right: .5rem; vertical-align: middle; }
+  pre { margin: .8rem 0; border-radius: 12px; overflow-x: auto; }
+  pre.code { background: var(--code-bg); color: var(--code-ink); padding: 1rem 1.15rem; font-size: .82rem; line-height: 1.65;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  pre.term { background: var(--term-bg); color: #d7dbe6; padding: 1rem 1.15rem; font-size: .8rem; line-height: 1.6;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .tok-k { color: #c792ea; } .tok-s { color: #c3e88d; } .tok-c { color: #5c6370; font-style: italic; }
+  .tok-f { color: #82aaff; } .tok-n { color: #f78c6c; }
+  .term .ok { color: #8ce99a; } .term .err { color: #ff8a8a; } .term .dim { color: #6b7280; }
+  .note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .94rem; }
+  .warn { background: var(--bad-soft); border-left: 3px solid var(--bad); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .94rem; }
+  .warn strong { color: var(--bad); }
+
+  .quiz { border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem 1.4rem; margin: 1.4rem 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .quiz .q { font-weight: 650; margin: 0 0 .6rem; }
+  .quiz .opt { display: block; width: 100%; text-align: left; cursor: pointer; border: 1px solid var(--line);
+    background: #fff; color: var(--ink); border-radius: 9px; padding: .55rem .8rem; margin: .35rem 0; font-size: .93rem; transition: border-color .12s, background .12s; }
+  .quiz .opt:hover { border-color: var(--accent); }
+  .quiz .opt.correct { background: var(--ok-soft); border-color: var(--ok); }
+  .quiz .opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
+  .quiz .opt:disabled { cursor: default; }
+  .quiz .fb { margin-top: .6rem; font-size: .88rem; padding: .55rem .8rem; border-radius: 8px; display: none; }
+  .quiz .fb.show { display: block; }
+  .quiz .fb.good { background: var(--ok-soft); color: var(--ok); }
+  .quiz .fb.bad { background: var(--bad-soft); color: var(--bad); }
+  .progress { font-size: .8rem; color: var(--muted); margin-top: 1.5rem; text-align: center; }
+  .ask { background: #16161d; color: #f3f3f8; border-radius: 12px; padding: 1.1rem 1.3rem; margin: 2.5rem 0 0; font-size: .95rem; }
+  .ask strong { color: #c7ccff; }
+  footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Lesson 05 · ~20 min · win: a real, runnable axe scan you control</div>
+  <h1>Hands-on: scanning with <code>@axe-core/playwright</code></h1>
+  <p class="lede">Time to make the engine run. In ~20 minutes you'll stand up a Playwright project, scan a live page against your axe bar (2.2 rule included, correctly enabled), and read real violations — the exact loop your skill automates.</p>
+
+  <div class="mission">
+    <strong>Why this:</strong> Lessons 1–4 were the map; this is the vehicle. <code>@axe-core/playwright</code> is the layer-② engine your skill will call. Get it running once by hand and the skill becomes "wrap this in a loop + apply L3 fixes."
+  </div>
+
+  <h2><span class="step">1</span>Set up a project</h2>
+  <p>Anywhere you like — a scratch folder is fine:</p>
+  <pre class="term">mkdir a11y-scan && cd a11y-scan
+npm init -y
+npm i -D @playwright/test @axe-core/playwright
+npx playwright install chromium</pre>
+  <p class="cite">Versions are released in lockstep with axe-core. Source: <a href="https://github.com/dequelabs/axe-core-npm/blob/develop/packages/playwright/README.md">@axe-core/playwright README</a>.</p>
+
+  <h2><span class="step">2</span>Write the scan</h2>
+  <p>Create <code>a11y.spec.ts</code>. We'll scan Deque's intentionally-broken demo so you actually see violations:</p>
+  <pre class="code"><span class="tok-k">import</span> { test, expect } <span class="tok-k">from</span> <span class="tok-s">'@playwright/test'</span>;
+<span class="tok-k">import</span> AxeBuilder <span class="tok-k">from</span> <span class="tok-s">'@axe-core/playwright'</span>;
+
+test(<span class="tok-s">'home page has no axe violations'</span>, <span class="tok-k">async</span> ({ page }) => {
+  <span class="tok-k">await</span> page.<span class="tok-f">goto</span>(<span class="tok-s">'https://dequeuniversity.com/demo/mars/'</span>);
+
+  <span class="tok-k">const</span> results = <span class="tok-k">await</span> <span class="tok-k">new</span> <span class="tok-f">AxeBuilder</span>({ page })
+    .<span class="tok-f">options</span>({
+      <span class="tok-c">// the tag SELECTS rules; rules:{} ENABLES disabled ones (see warning below)</span>
+      runOnly: { type: <span class="tok-s">'tag'</span>, values: [
+        <span class="tok-s">'wcag2a'</span>,<span class="tok-s">'wcag2aa'</span>,<span class="tok-s">'wcag21a'</span>,<span class="tok-s">'wcag21aa'</span>,<span class="tok-s">'wcag22aa'</span>,<span class="tok-s">'best-practice'</span>
+      ]},
+      rules: { <span class="tok-s">'target-size'</span>: { enabled: <span class="tok-k">true</span> } }
+    })
+    .<span class="tok-f">analyze</span>();
+
+  <span class="tok-c">// Print a readable summary before asserting</span>
+  <span class="tok-k">for</span> (<span class="tok-k">const</span> v <span class="tok-k">of</span> results.violations) {
+    console.<span class="tok-f">log</span>(<span class="tok-s">`[</span>${v.impact}<span class="tok-s">] </span>${v.id}<span class="tok-s"> — </span>${v.nodes.length}<span class="tok-s"> node(s)`</span>);
+    console.<span class="tok-f">log</span>(<span class="tok-s">'  fix: '</span> + v.helpUrl);
+  }
+
+  <span class="tok-f">expect</span>(results.violations).<span class="tok-f">toEqual</span>([]);
+});</pre>
+
+  <div class="warn">
+    <strong>The trap from Lesson 2, made concrete:</strong> <code>withTags(['wcag22aa'])</code> on its own will <b>not</b> run <code>target-size</code> — it's disabled by default and a tag only selects among <em>enabled</em> rules. You must enable it via <code>rules</code>. And in this package <code>.options()</code> <em>overrides</em> <code>withTags()</code>/<code>withRules()</code>, so put <b>both</b> <code>runOnly</code> and <code>rules</code> inside one <code>.options({...})</code> call (as above) — don't mix the two styles.
+    <div class="cite" style="margin-top:.4rem">Source: axe-core maintainer, <a href="https://github.com/dequelabs/axe-core/issues/3751">issue #3751</a>; <a href="https://github.com/dequelabs/axe-core-npm/blob/develop/packages/playwright/README.md">playwright README (options overrides)</a>.</div>
+  </div>
+
+  <h2><span class="step">3</span>Run it</h2>
+  <pre class="term">npx playwright test a11y.spec.ts</pre>
+  <p>You'll see something like:</p>
+  <pre class="term"><span class="dim">Running 1 test using 1 worker</span>
+[critical] image-alt — 3 node(s)
+  fix: https://dequeuniversity.com/rules/axe/4.10/image-alt
+[serious] color-contrast — 7 node(s)
+  fix: https://dequeuniversity.com/rules/axe/4.10/color-contrast
+[serious] link-name — 2 node(s)
+  fix: https://dequeuniversity.com/rules/axe/4.10/link-name
+
+  <span class="err">1) home page has no axe violations</span>
+     <span class="err">Error: expect(received).toEqual(expected)</span>
+<span class="err">1 failed</span></pre>
+  <p>That failure is success — you're now reading live <code>violations</code> objects (Lesson 1's anatomy, for real). Each line is <em>impact → rule id → count → helpUrl</em>: enough to triage and fix.</p>
+
+  <h2><span class="step">4</span>Three moves you'll use constantly</h2>
+
+  <h3>Scope to a component (<code>include</code> / <code>exclude</code>)</h3>
+  <p>Perfect for Angular component or Storybook tests — scan just what you own, skip third-party noise:</p>
+  <pre class="code"><span class="tok-k">const</span> results = <span class="tok-k">await</span> <span class="tok-k">new</span> <span class="tok-f">AxeBuilder</span>({ page })
+  .<span class="tok-f">include</span>(<span class="tok-s">'[data-test="date-picker"]'</span>)
+  .<span class="tok-f">exclude</span>(<span class="tok-s">'.third-party-widget'</span>)
+  .<span class="tok-f">analyze</span>();</pre>
+
+  <h3>Scan state revealed by interaction</h3>
+  <p>axe only sees the current DOM — drive the UI <em>first</em>, then analyze (catches modal/menu bugs):</p>
+  <pre class="code"><span class="tok-k">await</span> page.<span class="tok-f">getByRole</span>(<span class="tok-s">'button'</span>, { name: <span class="tok-s">'Open dialog'</span> }).<span class="tok-f">click</span>();
+<span class="tok-k">await</span> expect(page.<span class="tok-f">getByRole</span>(<span class="tok-s">'dialog'</span>)).<span class="tok-f">toBeVisible</span>();
+<span class="tok-k">const</span> results = <span class="tok-k">await</span> <span class="tok-k">new</span> <span class="tok-f">AxeBuilder</span>({ page }).<span class="tok-f">include</span>(<span class="tok-s">'[role=dialog]'</span>).<span class="tok-f">analyze</span>();</pre>
+
+  <h3>Ratchet on a legacy codebase (<code>disableRules</code>)</h3>
+  <p>Too many pre-existing failures to fix at once? Temporarily silence a rule so the gate still protects against <em>new</em> regressions:</p>
+  <pre class="code"><span class="tok-k">const</span> results = <span class="tok-k">await</span> <span class="tok-k">new</span> <span class="tok-f">AxeBuilder</span>({ page })
+  .<span class="tok-f">disableRules</span>([<span class="tok-s">'color-contrast'</span>]) <span class="tok-c">// TODO: remove once tokens fixed</span>
+  .<span class="tok-f">analyze</span>();</pre>
+
+  <div class="note">
+    <strong>Don't forget <code>results.incomplete</code>.</strong> Those are items axe couldn't decide — your skill should surface them for the manual layer (Lesson 4), not silently drop them.
+  </div>
+
+  <h2><span class="step">5</span>Reusable fixture (so the bar lives in one place)</h2>
+  <p>Encode your whole compliance bar once and reuse it everywhere — this is essentially the skill's automated arm:</p>
+  <pre class="code"><span class="tok-c">// axe-fixture.ts</span>
+<span class="tok-k">import</span> { test <span class="tok-k">as</span> base } <span class="tok-k">from</span> <span class="tok-s">'@playwright/test'</span>;
+<span class="tok-k">import</span> AxeBuilder <span class="tok-k">from</span> <span class="tok-s">'@axe-core/playwright'</span>;
+
+<span class="tok-k">export const</span> test = base.<span class="tok-f">extend</span>&lt;{ makeAxe: () => AxeBuilder }&gt;({
+  makeAxe: <span class="tok-k">async</span> ({ page }, use) => {
+    <span class="tok-k">await</span> <span class="tok-f">use</span>(() => <span class="tok-k">new</span> <span class="tok-f">AxeBuilder</span>({ page }).<span class="tok-f">options</span>({
+      runOnly: { type: <span class="tok-s">'tag'</span>, values: [
+        <span class="tok-s">'wcag2a'</span>,<span class="tok-s">'wcag2aa'</span>,<span class="tok-s">'wcag21a'</span>,<span class="tok-s">'wcag21aa'</span>,<span class="tok-s">'wcag22aa'</span>,<span class="tok-s">'best-practice'</span>] },
+      rules: { <span class="tok-s">'target-size'</span>: { enabled: <span class="tok-k">true</span> } }
+    }));
+  }
+});
+<span class="tok-k">export</span> { expect } <span class="tok-k">from</span> <span class="tok-s">'@playwright/test'</span>;</pre>
+
+  <h2><span class="step">6</span>Check yourself</h2>
+  <div class="quiz" id="quiz"></div>
+  <div class="progress" id="progress">0 / 4 answered</div>
+
+  <div class="ask">
+    <strong>Ask your teacher.</strong> Hit an install/run error, or want this pointed at your real Angular app (with dev-server startup + login)? Paste what you see and I'll get it green — then we can wrap it into the skill.
+  </div>
+
+  <footer>
+    Lesson 05 · grounded in
+    <a href="https://github.com/dequelabs/axe-core-npm/blob/develop/packages/playwright/README.md">@axe-core/playwright README</a> ·
+    <a href="https://playwright.dev/docs/accessibility-testing">Playwright a11y docs</a> ·
+    <a href="https://github.com/dequelabs/axe-core/issues/3751">axe #3751 (enabling 2.2)</a>.
+  </footer>
+</div>
+
+<script>
+  const questions = [
+    {
+      q: "You use .withTags(['wcag22aa']) and nothing else. Does target-size run?",
+      opts: [
+        { t: "Yes — the tag selects and runs it", ok: false, fb: "No. target-size is disabled by default; a tag only selects among ENABLED rules. You must enable it via rules:{}." },
+        { t: "No — you must also enable it with rules:{'target-size':{enabled:true}}", ok: true, fb: "Correct. Tag = select; rules = enable. You need both." },
+        { t: "Only in headed mode", ok: false, fb: "Headless/headed is irrelevant — it's about enabling the disabled rule." }
+      ]
+    },
+    {
+      q: "Why combine runOnly and rules inside ONE .options({}) call?",
+      opts: [
+        { t: ".options() overrides withTags/withRules, so mixing styles drops config", ok: true, fb: "Right. Per the README, .options() overrides the chainable tag/rule setters — keep it all in one options object." },
+        { t: "It's just shorter", ok: false, fb: "It's about correctness: .options() overrides the other setters, so mixing them silently loses settings." },
+        { t: "rules can't be used with Playwright", ok: false, fb: "rules works fine — it just must live inside .options() here." }
+      ]
+    },
+    {
+      q: "A bug only appears after opening a modal. How do you scan it?",
+      opts: [
+        { t: "Scan immediately after page.goto()", ok: false, fb: "axe sees only the current DOM — the modal isn't open yet, so it's missed." },
+        { t: "Click to open the modal, await it visible, THEN analyze (scoped to the dialog)", ok: true, fb: "Yes. Drive the UI first; axe scans whatever is rendered at analyze() time." },
+        { t: "Use disableRules", ok: false, fb: "disableRules silences checks — it doesn't reveal hidden DOM. Interact first." }
+      ]
+    },
+    {
+      q: "Legacy app has 200 color-contrast failures you can't fix today. Keep the gate useful by…",
+      opts: [
+        { t: "Deleting the test", ok: false, fb: "Then new regressions slip through. Don't remove the safety net." },
+        { t: "disableRules(['color-contrast']) temporarily, with a TODO to remove", ok: true, fb: "Correct — ratchet: silence the known rule so the gate still blocks NEW issues, then fix and re-enable." },
+        { t: "Lower withTags to wcag2a only", ok: false, fb: "That drops many unrelated AA checks too. Disable just the noisy rule instead." }
+      ]
+    }
+  ];
+  const quizEl = document.getElementById('quiz');
+  const progressEl = document.getElementById('progress');
+  let answered = 0;
+  questions.forEach((item, qi) => {
+    const block = document.createElement('div');
+    if (qi > 0) block.style.marginTop = '1.6rem';
+    const q = document.createElement('p'); q.className = 'q'; q.textContent = (qi+1)+'. '+item.q; block.appendChild(q);
+    const fb = document.createElement('div'); fb.className = 'fb';
+    item.opts.forEach(opt => {
+      const btn = document.createElement('button'); btn.className = 'opt'; btn.textContent = opt.t;
+      btn.addEventListener('click', () => {
+        if (block.dataset.done) return; block.dataset.done = '1'; answered++;
+        progressEl.textContent = answered + ' / ' + questions.length + ' answered' +
+          (answered === questions.length ? ' — the engine is in your hands. Ready to build the skill?' : '');
+        [...block.querySelectorAll('.opt')].forEach(b => b.disabled = true);
+        btn.classList.add(opt.ok ? 'correct' : 'wrong');
+        if (!opt.ok) { const right = [...block.querySelectorAll('.opt')][item.opts.findIndex(o=>o.ok)]; if (right) right.classList.add('correct'); }
+        fb.textContent = opt.fb; fb.classList.add('show', opt.ok ? 'good' : 'bad');
+      });
+      block.appendChild(btn);
+    });
+    block.appendChild(fb); quizEl.appendChild(block);
+  });
+</script>
+</body>
+</html>

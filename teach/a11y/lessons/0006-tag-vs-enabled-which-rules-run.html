@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 06 — Tag vs enabled: which rules actually run?</title>
+<style>
+  :root {
+    --ink: #16161d;
+    --muted: #5d5d72;
+    --line: #e6e6ef;
+    --accent: #4338ca;
+    --accent-soft: #eef0ff;
+    --bg: #fbfbfd;
+    --code-bg: #1e1e2e;
+    --code-ink: #e4e4f0;
+    --ok: #15803d;
+    --ok-soft: #e7f6ec;
+    --bad: #b91c1c;
+    --bad-soft: #fbeaea;
+    --serious: #c2410c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 3rem 1.25rem 6rem;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .kicker { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  h1 { font-size: 2.1rem; line-height: 1.15; letter-spacing: -.025em; margin: .35rem 0 .5rem; }
+  .lede { font-size: 1.12rem; color: #33333f; margin: 0 0 .5rem; }
+  .mission { font-size: .9rem; color: var(--muted); background: var(--accent-soft); border-radius: 8px; padding: .7rem .9rem; margin: 1.2rem 0 2rem; }
+  h2 { font-size: 1.3rem; letter-spacing: -.01em; margin: 2.6rem 0 .6rem; }
+  h3 { font-size: 1.02rem; margin: 1.6rem 0 .4rem; }
+  p { margin: .7rem 0; }
+  a { color: var(--accent); }
+  code { background: #f0f0f7; padding: .1em .4em; border-radius: 5px; font-size: .86em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .cite { font-size: .82rem; color: var(--muted); }
+  .cite a { color: var(--muted); }
+
+  pre.code {
+    background: var(--code-bg); color: var(--code-ink); border-radius: 12px;
+    padding: 1.1rem 1.2rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .82rem; line-height: 1.7; overflow-x: auto; margin: 1rem 0;
+  }
+  pre.code .k { color: #9db4ff; }
+  pre.code .s { color: #8ce99a; }
+  pre.code .c { color: #6b6b85; font-style: italic; }
+  pre.code .hl { background: rgba(124,131,255,.22); border-radius: 4px; padding: 0 .15em; }
+
+  table { width: 100%; border-collapse: collapse; margin: .8rem 0; font-size: .92rem; }
+  th, td { text-align: left; padding: .5rem .65rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  td.yes { color: var(--ok); font-weight: 650; }
+  td.no { color: var(--muted); }
+  .pill { display: inline-block; padding: .05rem .55rem; border-radius: 999px; font-size: .74rem; font-weight: 700; color: #fff; background: var(--serious); }
+
+  .note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .95rem; }
+  .myth { background: var(--bad-soft); border-left: 3px solid var(--bad); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .95rem; }
+  .myth strong { color: var(--bad); }
+  .truth { background: var(--ok-soft); border-left: 3px solid var(--ok); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .95rem; }
+  .truth strong { color: var(--ok); }
+
+  .quiz { border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem 1.4rem; margin: 1.4rem 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .quiz .q { font-weight: 650; margin: 0 0 .8rem; }
+  .quiz .scenario { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .8rem; background: #f0f0f7; padding: .5rem .7rem; border-radius: 8px; margin: 0 0 .8rem; }
+  .quiz .opt {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    border-radius: 9px; padding: .6rem .8rem; margin: .4rem 0; font-size: .96rem;
+    transition: border-color .12s, background .12s;
+  }
+  .quiz .opt:hover { border-color: var(--accent); }
+  .quiz .opt.correct { background: var(--ok-soft); border-color: var(--ok); }
+  .quiz .opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
+  .quiz .opt:disabled { cursor: default; }
+  .quiz .fb { margin-top: .7rem; font-size: .9rem; padding: .6rem .8rem; border-radius: 8px; display: none; }
+  .quiz .fb.show { display: block; }
+  .quiz .fb.good { background: var(--ok-soft); color: var(--ok); }
+  .quiz .fb.bad { background: var(--bad-soft); color: var(--bad); }
+  .progress { font-size: .8rem; color: var(--muted); margin-top: 2rem; text-align: center; }
+  .ask { background: #16161d; color: #f3f3f8; border-radius: 12px; padding: 1.1rem 1.3rem; margin: 2.5rem 0 0; font-size: .95rem; }
+  .ask strong { color: #c7ccff; }
+  footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Lesson 06 · ~8 min · win: predict whether ANY rule will run</div>
+  <h1>Tag vs <code>enabled</code>: which rules actually run?</h1>
+  <p class="lede">You commented out <code>rules: { 'target-size': { enabled: true } }</code> in <code>axe.config.ts</code> but kept the <code>wcag22aa</code> tag — and you still get a <span class="pill">serious</span> <code>target-size</code> violation on <code>/pointer-size</code>. That's not a bug. It exposes how axe really decides what to run, and it overturns a note we'd written down. Let's nail the actual model.</p>
+
+  <div class="mission">
+    <strong>Why this matters for the mission.</strong> Your skill must <em>honestly</em> opt into WCAG 2.2. If you believe "the tag won't run <code>target-size</code> unless I also enable it," you'll mis-explain the skill and mis-debug scans that <em>do</em> fire the rule. Get the selection model right and you can predict any config's behavior without running it.
+  </div>
+
+  <h2>1. The puzzle, reproduced on your own page</h2>
+  <p><code>/pointer-size</code> renders a <code>.small-button</code> at <code>font-size:3px; padding:0</code> — far under the 24×24px minimum of <a href="https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html">SC 2.5.8 Target Size (Minimum)</a>. Running <code>@axe-core/playwright</code> against the live page, changing <em>only</em> the options, gives:</p>
+  <table>
+    <tr><th>#</th><th>runOnly tags</th><th>rules:&#123;target-size:enabled&#125;</th><th>ran?</th><th>violation?</th></tr>
+    <tr><td>A <em>(your config)</em></td><td>…<code>wcag22aa</code></td><td>— (commented out)</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+    <tr><td>B</td><td>…<code>wcag22aa</code></td><td>enabled</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+    <tr><td>C</td><td><em>no</em> <code>wcag22aa</code></td><td>—</td><td class="no">no</td><td class="no">no</td></tr>
+    <tr><td>D</td><td><em>none</em> (no <code>runOnly</code>)</td><td>—</td><td class="no">no</td><td class="no">no</td></tr>
+    <tr><td>E</td><td><em>no</em> <code>wcag22aa</code></td><td>enabled</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+    <tr><td>F</td><td><code>.withTags([…'wcag22aa'])</code></td><td>— (no <code>.withRules</code>)</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+  </table>
+  <p class="cite">Empirical, axe-core 4.12.0 (your installed version), live <code>http://localhost:4300/pointer-size</code>. Verified identical on 4.11.4 — so this is not a version change. Rows A–F all confirmed by running the actual Playwright spec.</p>
+
+  <div class="note">
+    <strong>Builder API = same logic.</strong> Row F uses <code>@axe-core/playwright</code>'s <code>.withTags([…])</code> instead of raw <code>.options({ runOnly })</code> — and behaves identically, because <code>.withTags()</code> is just sugar for <code>runOnly: { type: 'tag' }</code> (and <code>.withRules()</code> for <code>rules</code>). One gotcha: <code>.options()</code> <em>replaces</em> <code>withTags</code>/<code>withRules</code>, so don't mix them — pick one style.
+  </div>
+
+  <h2>2. The model that explains every row</h2>
+  <p>axe has <strong>two independent switches</strong> for "does this rule run?", and a rule runs if <em>either</em> turns it on:</p>
+
+  <p><strong>Switch 1 — the tag, via <code>runOnly</code>.</strong> When you pass <code>runOnly: { type: 'tag', values: [...] }</code>, axe runs <em>every rule whose tags intersect your list</em>. Selecting by tag is an explicit opt-in; the rule's own <code>enabled</code> flag is <em>not consulted</em> on this path. <code>target-size</code> is tagged <code>wcag22aa</code>, so naming that tag runs it. → explains A, B, E, and why C doesn't.</p>
+
+  <p><strong>Switch 2 — the <code>enabled</code> flag, on the default path.</strong> When you pass <em>no</em> <code>runOnly</code>, axe runs every rule whose metadata is <code>enabled: true</code> (and isn't <code>experimental</code>). <code>target-size</code> ships <code>enabled: false</code>, so the bare default skips it. → explains D.</p>
+
+  <pre class="code"><span class="c">// target-size's metadata — confirmed in YOUR node_modules/axe-core@4.12.0</span>
+<span class="k">require</span>(<span class="s">'axe-core'</span>)._audit.rules
+  .find(r => r.id === <span class="s">'target-size'</span>)
+  <span class="c">// .enabled  => false        ← only matters on the no-runOnly path</span>
+  <span class="c">// .tags     => ['cat.sensory-and-visual-cues', '<span class="hl">wcag22aa</span>', 'wcag258']</span></pre>
+
+  <div class="myth">
+    <strong>Myth (what record 0001/0002 said):</strong> "<code>target-size</code> is <code>enabled:false</code>, so the <code>wcag22aa</code> tag alone won't run it — you must add <code>rules:{ 'target-size': { enabled:true } }</code>."
+  </div>
+  <div class="truth">
+    <strong>Truth:</strong> The <code>wcag22aa</code> tag in <code>runOnly</code> runs it on its own. The <code>enabled:false</code> flag only suppresses it on the <em>no-<code>runOnly</code></em> default run. The explicit <code>rules:{}</code> enable is <em>redundant when the tag is present</em> — useful only as defence for scans that don't request the tag (row E).
+  </div>
+
+  <h2>3. So should you keep the explicit enable?</h2>
+  <p><strong>Yes — but know what it buys you.</strong> It's idempotent and harmless. Its real value is row&nbsp;E: a teammate who scans with <code>wcag2a…wcag21aa</code> but forgets <code>wcag22aa</code> still gets <code>target-size</code>. It guards the bar against an incomplete tag list — it is <em>not</em> "the thing that turns the rule on" when you already pass <code>wcag22aa</code>.</p>
+
+  <div class="note">
+    <strong>One claim this does <em>not</em> change.</strong> Passing axe with <code>target-size</code> on still isn't "WCAG 2.2 AA compliant." Four of the new 2.2 A/AA criteria (2.4.11, 3.2.6, 3.3.7, 3.3.8 — and 2.5.7) aren't automatable. The skill's manual checklist arm still stands. See <code>reference/glossary.html</code> and the manual checklist.
+  </div>
+
+  <h2>4. Check yourself</h2>
+  <p>Predict each scenario before clicking. Instant feedback.</p>
+  <div class="quiz" id="quiz"></div>
+  <div class="progress" id="progress">0 / 4 answered</div>
+
+  <div class="ask">
+    <strong>Your teacher is one message away.</strong> Want to see the same two-switch model for a <code>best-practice</code> rule (many are <code>enabled:false</code> too)? Or have me wire the <em>tag list</em> vs <em>explicit enable</em> into your <code>scan.spec.ts</code> comment so it's accurate? Ask in chat.
+  </div>
+
+  <footer>
+    Lesson 06 · grounded in
+    <a href="https://github.com/dequelabs/axe-core/blob/develop/doc/API.md">axe-core API.md (§"modified set using tags and rule enable")</a> ·
+    live scans of <code>/pointer-size</code> on axe 4.11.4 &amp; 4.12.0 ·
+    corrects learning records 0001 &amp; 0002 → see 0003.
+  </footer>
+</div>
+
+<script>
+  const questions = [
+    {
+      q: "Config: runOnly tags = ['wcag2a','wcag2aa']  (no wcag22aa, no rules:{}). Does target-size run?",
+      opts: [
+        { t: "No — its tag isn't requested and enabled:false keeps it off", ok: true, fb: "Right. The tag path didn't select it (no wcag22aa), and the enabled flag only helps on the no-runOnly path. Neither switch is on." },
+        { t: "Yes — target-size always runs in 4.12.0", ok: false, fb: "No. It only runs if the wcag22aa tag is requested OR it's explicitly enabled via rules:{}. Neither here." },
+        { t: "Yes — best-practice covers it", ok: false, fb: "target-size is tagged wcag22aa, not best-practice. Not selected here." }
+      ]
+    },
+    {
+      q: "Config: runOnly tags include 'wcag22aa', rules:{} omitted. Does target-size run?",
+      opts: [
+        { t: "No — you must also set rules:{target-size:{enabled:true}}", ok: false, fb: "That's the myth this lesson kills. Naming the tag in runOnly runs the rule regardless of enabled:false." },
+        { t: "Yes — naming the tag in runOnly is itself the opt-in", ok: true, fb: "Correct — this is exactly your axe.config.ts (row A). The tag selects it; enabled:false is ignored on the runOnly path." }
+      ]
+    },
+    {
+      q: "Config: axe.run(document) with NO options at all. Does target-size run?",
+      opts: [
+        { t: "Yes — defaults include WCAG 2.2", ok: false, fb: "No. The bare default runs only enabled:true rules. target-size is enabled:false, so it's skipped (row D)." },
+        { t: "No — the default path obeys enabled:false", ok: true, fb: "Right. With no runOnly, only enabled:true (non-experimental) rules run, so target-size is skipped." }
+      ]
+    },
+    {
+      q: "What does keeping the explicit rules:{target-size:{enabled:true}} actually protect against?",
+      opts: [
+        { t: "A scan that requests wcag22aa — it's required there", ok: false, fb: "Not required there — the tag already runs it. It's redundant when wcag22aa is present." },
+        { t: "A scan that forgets the wcag22aa tag — it still runs the rule", ok: true, fb: "Exactly (row E). The explicit enable is a safety net for incomplete tag lists, not the primary switch." },
+        { t: "Nothing — it's pure noise", ok: false, fb: "Not noise: it's a harmless, idempotent guard for the forgot-the-tag case. Just don't mistake it for what enables the rule normally." }
+      ]
+    }
+  ];
+
+  const quizEl = document.getElementById('quiz');
+  const progressEl = document.getElementById('progress');
+  let answered = 0;
+
+  questions.forEach((item, qi) => {
+    const block = document.createElement('div');
+    if (qi > 0) block.style.marginTop = '1.6rem';
+    const q = document.createElement('p');
+    q.className = 'q';
+    q.textContent = (qi + 1) + '. ' + item.q;
+    block.appendChild(q);
+
+    const fb = document.createElement('div');
+    fb.className = 'fb';
+
+    item.opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.textContent = opt.t;
+      btn.addEventListener('click', () => {
+        if (block.dataset.done) return;
+        block.dataset.done = '1';
+        answered++;
+        progressEl.textContent = answered + ' / ' + questions.length + ' answered' +
+          (answered === questions.length ? ' — you can now predict any axe config. Tell your teacher.' : '');
+        [...block.querySelectorAll('.opt')].forEach(b => b.disabled = true);
+        btn.classList.add(opt.ok ? 'correct' : 'wrong');
+        if (!opt.ok) {
+          const right = [...block.querySelectorAll('.opt')][item.opts.findIndex(o => o.ok)];
+          if (right) right.classList.add('correct');
+        }
+        fb.textContent = opt.fb;
+        fb.classList.add('show', opt.ok ? 'good' : 'bad');
+      });
+      block.appendChild(btn);
+    });
+
+    block.appendChild(fb);
+    quizEl.appendChild(block);
+  });
+</script>
+</body>
+</html>
