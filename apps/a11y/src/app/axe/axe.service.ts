@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import type { AxeResults, Result } from 'axe-core';
+import type { AxeResults, Result, RuleMetadata } from 'axe-core';
 import { AXE_RUN_OPTIONS } from './axe.config';
 
 type AxeModule = typeof import('axe-core');
@@ -40,5 +40,12 @@ export class AxeService {
   clear(): void {
     this.violations.set([]);
     this.hasRun.set(false);
+  }
+
+  /** Returns the rules axe-core ships with, optionally filtered by tags. */
+  async getRules(tags?: string[]): Promise<RuleMetadata[]> {
+    const axe = await this.initialize();
+
+    return axe.getRules(tags);
   }
 }

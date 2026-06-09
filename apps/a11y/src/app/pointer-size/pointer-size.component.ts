@@ -9,13 +9,18 @@ import { Component } from "@angular/core";
     <button class="small-button">Small Button</button>
   `,
   styles: `
+  button {
+    margin: 0.5rem;
+  }
+
   .large-button {
     width: 100px;
     height: 100px;
   }
   .small-button {
-    width: 10px;
-    height: 10px;
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
   }
 
   `,

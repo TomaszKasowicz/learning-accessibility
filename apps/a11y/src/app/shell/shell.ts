@@ -67,7 +67,7 @@ import { getNavRoutes } from '../app.routes';
               <mat-icon>menu</mat-icon>
             </button>
           }
-          <h1 class="shell-title">{{ title }}</h1>
+          <header class="shell-title">{{ title }}</header>
           <span class="toolbar-spacer"></span>
           <button
             mat-stroked-button

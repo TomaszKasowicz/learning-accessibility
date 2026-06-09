@@ -15,4 +15,5 @@ export const AXE_RUN_OPTIONS: RunOptions = {
     type: 'tag',
     values: [...AXE_DEFAULT_TAGS],
   },
+  rules: { 'target-size': { enabled: true } }
 };
