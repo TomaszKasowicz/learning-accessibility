@@ -38,13 +38,10 @@ import { AxeService } from './axe.service';
               >
                 <span matListItemTitle>{{ violation.help }} ({{ violation.tags.join(', ') }})</span>
                 <span matListItemLine>
-                  {{ violation.id }} · {{ violation.impact ?? 'unknown' }} impact
+                  {{ violation.id }} · {{ violation.impact ?? 'unknown' }} impact (<a href="{{ violation.helpUrl }}" target="_blank">{{ violation.helpUrl }}</a>)
                 </span>
                 <span matListItemLine>
                   Description: {{ violation.description }}
-                </span>
-                <span matListItemLine>
-                  Help URL: <a href="{{ violation.helpUrl }}" target="_blank">{{ violation.helpUrl }}</a>
                 </span>
               </button>
             }

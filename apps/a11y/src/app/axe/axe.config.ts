@@ -6,6 +6,7 @@ export const AXE_DEFAULT_TAGS = [
   'wcag2aa',
   'wcag21a',
   'wcag21aa',
+  'wcag22aa',
   'best-practice',
 ] as const;
 

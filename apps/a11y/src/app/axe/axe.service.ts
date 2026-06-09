@@ -28,7 +28,7 @@ export class AxeService {
 
     try {
       const axe = await this.initialize();
-      const results: AxeResults = await axe.run(context /*, AXE_RUN_OPTIONS*/);
+      const results: AxeResults = await axe.run(context , AXE_RUN_OPTIONS);
 
       this.violations.set(results.violations);
       this.hasRun.set(true);

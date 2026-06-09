@@ -4,6 +4,7 @@ import {
   ElementRef,
   effect,
   inject,
+  signal,
   viewChild,
 } from '@angular/core';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -11,7 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -34,8 +35,8 @@ import { getNavRoutes } from '../app.routes';
   template: `
     <mat-sidenav-container class="shell-container">
       <mat-sidenav
-        #drawer
         [mode]="isMobile() ? 'over' : 'side'"
+        [opened]="drawerOpen()"
         [fixedInViewport]="isMobile()"
         fixedTopGap="64"
       >
@@ -60,7 +61,7 @@ import { getNavRoutes } from '../app.routes';
             <button
               mat-icon-button
               type="button"
-              (click)="drawer.toggle()"
+              (click)="toggleDrawer()"
               aria-label="Toggle navigation menu"
             >
               <mat-icon>menu</mat-icon>
@@ -135,8 +136,8 @@ export class Shell {
 
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly router = inject(Router);
-  private readonly drawer = viewChild.required<MatSidenav>('drawer');
   private readonly routeContent = viewChild.required<ElementRef<HTMLElement>>('routeContent');
+  protected readonly drawerOpen = signal(false);
 
   protected readonly isMobile = toSignal(
     this.breakpointObserver
@@ -147,14 +148,7 @@ export class Shell {
 
   constructor() {
     effect(() => {
-      const drawer = this.drawer();
-      const mobile = this.isMobile();
-
-      if (mobile) {
-        drawer.close();
-      } else {
-        drawer.open();
-      }
+      this.drawerOpen.set(!this.isMobile());
     });
 
     this.router.events
@@ -169,9 +163,13 @@ export class Shell {
     await this.axe.run(this.routeContent().nativeElement);
   }
 
+  protected toggleDrawer(): void {
+    this.drawerOpen.update((open) => !open);
+  }
+
   protected closeSidenavOnNavigate(): void {
     if (this.isMobile()) {
-      this.drawer().close();
+      this.drawerOpen.set(false);
     }
   }
 }
