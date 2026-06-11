@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import type { RuleMetadata } from 'axe-core';
-import { AXE_DEFAULT_TAGS } from '../axe/axe.config';
-import { AxeService } from '../axe/axe.service';
+import { AXE_DEFAULT_TAGS } from '../../axe/axe.config';
+import { AxeService } from '../../axe/axe.service';
 
 interface RuleRow extends RuleMetadata {
   /** True when the rule matches the app's configured default tag set. */

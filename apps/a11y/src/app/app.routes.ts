@@ -1,11 +1,11 @@
 import { Route } from '@angular/router';
-import { Home } from './home/home';
-import { Headings } from './headings/headings';
-import { WrongHeadings } from './wrong-headings/wrong-headings';
-import { ForbiddenChildrenComponent } from './forbidden-children/forbidden-children.component';
-import { PointerSizeComponent } from './pointer-size/pointer-size.component';
-import { FocusObscuredComponent } from './focus-obscured/focus-obscured.component';
-import { AxeRulesComponent } from './axe-rules/axe-rules.component';
+import { Home } from './components/home/home';
+import { Headings } from './components/a11y/headings/headings';
+import { WrongHeadings } from './components/a11y/wrong-headings/wrong-headings';
+import { ForbiddenChildrenComponent } from './components/a11y/forbidden-children/forbidden-children.component';
+import { PointerSizeComponent } from './components/a11y/pointer-size/pointer-size.component';
+import { FocusObscuredComponent } from './components/a11y/focus-obscured/focus-obscured.component';
+import { AxeRulesComponent } from './components/axe-rules/axe-rules.component';
 
 export interface NavRoute {
   path: string;

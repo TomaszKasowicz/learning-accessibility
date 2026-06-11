@@ -16,9 +16,9 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, map } from 'rxjs';
-import { AxeViolations } from '../axe/axe-violations';
-import { AxeService } from '../axe/axe.service';
-import { getNavRoutes } from '../app.routes';
+import { AxeViolations } from '../../axe/axe-violations';
+import { AxeService } from '../../axe/axe.service';
+import { getNavRoutes } from '../../app.routes';
 
 @Component({
   selector: 'app-shell',
