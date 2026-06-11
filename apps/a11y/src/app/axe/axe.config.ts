@@ -8,6 +8,7 @@ export const AXE_DEFAULT_TAGS = [
   'wcag21aa',
   'wcag22aa',
   'best-practice',
+  'experimental',
 ] as const;
 
 export const AXE_RUN_OPTIONS: RunOptions = {
@@ -15,5 +16,6 @@ export const AXE_RUN_OPTIONS: RunOptions = {
     type: 'tag',
     values: [...AXE_DEFAULT_TAGS],
   },
+  // rules: { 'focus-order-semantics': { enabled: true } }, // Enabled via experimental tag
   // rules: { 'target-size': { enabled: true } }
 };

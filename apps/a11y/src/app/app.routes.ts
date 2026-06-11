@@ -6,6 +6,8 @@ import { ForbiddenChildrenComponent } from './components/a11y/forbidden-children
 import { PointerSizeComponent } from './components/a11y/pointer-size/pointer-size.component';
 import { FocusObscuredComponent } from './components/a11y/focus-obscured/focus-obscured.component';
 import { ColorContrastComponent } from './components/a11y/color-contrast/color-contrast.component';
+import { TabindexNonInteractiveComponent } from './components/a11y/tabindex-non-interactive/tabindex-non-interactive.component';
+import { AxeRulesByTagComponent } from './components/axe-rules/axe-rules-by-tag.component';
 import { AxeRulesComponent } from './components/axe-rules/axe-rules.component';
 
 export interface NavRoute {
@@ -33,6 +35,16 @@ export const appRoutes: Route[] = [
   { path: 'pointer-size', component: PointerSizeComponent, title: 'Pointer Size'},
   { path: 'focus-obscured', component: FocusObscuredComponent, title: 'Focus Obscured' },
   { path: 'color-contrast', component: ColorContrastComponent, title: 'Color Contrast' },
+  {
+    path: 'tabindex-non-interactive',
+    component: TabindexNonInteractiveComponent,
+    title: 'Tabindex on Static Content',
+  },
   { path: 'axe-rules', component: AxeRulesComponent, title: 'Axe Rules' },
+  {
+    path: 'axe-rules-by-tag',
+    component: AxeRulesByTagComponent,
+    title: 'Axe Rules by Tag',
+  },
   { path: '**', redirectTo: 'home' },
 ];
