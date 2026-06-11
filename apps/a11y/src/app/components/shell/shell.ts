@@ -160,6 +160,7 @@ export class Shell {
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly router = inject(Router);
   private readonly routeContent = viewChild.required<ElementRef<HTMLElement>>('routeContent');
+  private readonly mainContent = viewChild.required<ElementRef<HTMLElement>>('mainContent');
   protected readonly drawerOpen = signal(false);
 
   protected readonly isMobile = toSignal(
@@ -174,12 +175,24 @@ export class Shell {
       this.drawerOpen.set(!this.isMobile());
     });
 
+    let isInitialNavigation = true;
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
         takeUntilDestroyed(),
       )
-      .subscribe(() => this.axe.clear());
+      .subscribe(() => {
+        this.axe.clear();
+
+        // Don't steal focus on first page load (let the user reach the
+        // skip-link); only manage focus on in-app route changes.
+        if (isInitialNavigation) {
+          isInitialNavigation = false;
+          return;
+        }
+
+        this.mainContent().nativeElement.focus();
+      });
   }
 
   protected async runAxeTest(): Promise<void> {
