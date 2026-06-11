@@ -10,6 +10,7 @@ import { TabindexNonInteractiveComponent } from './components/a11y/tabindex-non-
 import { AxeRulesByTagComponent } from './components/axe-rules/axe-rules-by-tag.component';
 import { AxeRulesComponent } from './components/axe-rules/axe-rules.component';
 import { DialogComponent } from './components/a11y/dialog/dialog.component';
+import { DuplicateMainComponent } from './components/a11y/duplicate-main/duplicate-main.component';
 
 export interface NavRoute {
   path: string;
@@ -42,6 +43,11 @@ export const appRoutes: Route[] = [
     title: 'Tabindex on Static Content',
   },
   { path: 'dialog', component: DialogComponent, title: 'Dialog' },
+  {
+    path: 'duplicate-main',
+    component: DuplicateMainComponent,
+    title: 'Duplicate Main',
+  },
   { path: 'axe-rules', component: AxeRulesComponent, title: 'Axe Rules' },
   {
     path: 'axe-rules-by-tag',
