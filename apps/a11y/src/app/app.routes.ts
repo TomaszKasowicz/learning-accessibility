@@ -5,6 +5,7 @@ import { WrongHeadings } from './components/a11y/wrong-headings/wrong-headings';
 import { ForbiddenChildrenComponent } from './components/a11y/forbidden-children/forbidden-children.component';
 import { PointerSizeComponent } from './components/a11y/pointer-size/pointer-size.component';
 import { FocusObscuredComponent } from './components/a11y/focus-obscured/focus-obscured.component';
+import { ColorContrastComponent } from './components/a11y/color-contrast/color-contrast.component';
 import { AxeRulesComponent } from './components/axe-rules/axe-rules.component';
 
 export interface NavRoute {
@@ -31,6 +32,7 @@ export const appRoutes: Route[] = [
   { path: 'forbidden-children', component: ForbiddenChildrenComponent, title: 'Forbidden Children' },
   { path: 'pointer-size', component: PointerSizeComponent, title: 'Pointer Size'},
   { path: 'focus-obscured', component: FocusObscuredComponent, title: 'Focus Obscured' },
+  { path: 'color-contrast', component: ColorContrastComponent, title: 'Color Contrast' },
   { path: 'axe-rules', component: AxeRulesComponent, title: 'Axe Rules' },
   { path: '**', redirectTo: 'home' },
 ];
