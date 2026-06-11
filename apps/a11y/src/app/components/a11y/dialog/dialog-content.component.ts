@@ -50,7 +50,7 @@ export type DialogContentData = {
       padding: 1.5rem;
     }
   `,
-  imports: [MatProgressSpinner, MatButtonModule],
+  imports: [MatButtonModule],
 })
 export class DialogContentComponent {
   dialogRef = inject<DialogRef<string>>(DialogRef<string>);

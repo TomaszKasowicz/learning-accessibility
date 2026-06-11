@@ -33,6 +33,10 @@ import { getNavRoutes } from '../../app.routes';
     AxeViolations,
   ],
   template: `
+    <a class="skip-link" href="javascript:void(0)" (click)="skipToContent(mainContent)">
+      Skip to content
+    </a>
+
     <mat-sidenav-container class="shell-container">
       <mat-sidenav
         [mode]="isMobile() ? 'over' : 'side'"
@@ -83,7 +87,7 @@ import { getNavRoutes } from '../../app.routes';
           </button>
         </mat-toolbar>
 
-        <main class="content">
+        <main id="main-content" class="content" #mainContent tabindex="-1">
           <div class="route-content" #routeContent>
             <router-outlet />
           </div>
@@ -96,6 +100,21 @@ import { getNavRoutes } from '../../app.routes';
     :host {
       display: block;
       height: 100%;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--mat-sys-primary);
+      color: var(--mat-sys-on-primary);
+      padding: 8px;
+      z-index: 1000;
+      transition: top 0.3s;
+    }
+
+    .skip-link:focus {
+      top: 0;
     }
 
     .shell-container {
@@ -114,6 +133,10 @@ import { getNavRoutes } from '../../app.routes';
 
     .content {
       padding: 1.5rem;
+    }
+
+    .content:focus {
+      outline: none;
     }
 
     .route-content {
@@ -171,5 +194,9 @@ export class Shell {
     if (this.isMobile()) {
       this.drawerOpen.set(false);
     }
+  }
+
+  protected skipToContent(mainContent: HTMLElement): void {
+    mainContent.focus();
   }
 }
