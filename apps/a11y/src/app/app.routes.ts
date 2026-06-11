@@ -9,6 +9,7 @@ import { ColorContrastComponent } from './components/a11y/color-contrast/color-c
 import { TabindexNonInteractiveComponent } from './components/a11y/tabindex-non-interactive/tabindex-non-interactive.component';
 import { AxeRulesByTagComponent } from './components/axe-rules/axe-rules-by-tag.component';
 import { AxeRulesComponent } from './components/axe-rules/axe-rules.component';
+import { DialogComponent } from './components/a11y/dialog/dialog.component';
 
 export interface NavRoute {
   path: string;
@@ -40,6 +41,7 @@ export const appRoutes: Route[] = [
     component: TabindexNonInteractiveComponent,
     title: 'Tabindex on Static Content',
   },
+  { path: 'dialog', component: DialogComponent, title: 'Dialog' },
   { path: 'axe-rules', component: AxeRulesComponent, title: 'Axe Rules' },
   {
     path: 'axe-rules-by-tag',
