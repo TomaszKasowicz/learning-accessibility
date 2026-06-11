@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reference — Playwright + axe: toBeAccessible() matcher</title>
+<style>
+  :root { --ink:#16161d; --muted:#5d5d72; --line:#e6e6ef; --accent:#4338ca; --bg:#fff;
+          --code-bg:#1e1e2e; --code-ink:#e4e4f0; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding:2rem 1.25rem 4rem; }
+  .wrap { max-width:820px; margin:0 auto; }
+  .kicker { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700; }
+  h1 { font-size:1.7rem; letter-spacing:-.02em; margin:.3rem 0 .2rem; }
+  .sub { color:var(--muted); margin:0 0 1.4rem; }
+  h2 { font-size:1.05rem; margin:1.8rem 0 .4rem; border-bottom:1px solid var(--line); padding-bottom:.3rem; }
+  code { background:#f0f0f7; padding:.1em .4em; border-radius:5px; font-size:.85em;
+    font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  pre { background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:1rem 1.1rem;
+    font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.78rem; line-height:1.6;
+    overflow-x:auto; margin:.7rem 0; }
+  pre .c { color:#6b6b85; font-style:italic; }
+  table { width:100%; border-collapse:collapse; margin:.6rem 0; font-size:.86rem; }
+  th, td { text-align:left; padding:.45rem .6rem; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  .cite { font-size:.78rem; color:var(--muted); margin-top:1.6rem; }
+  .cite a { color:var(--muted); }
+  @media print { body { padding:0; } pre { font-size:.7rem; } a { color:var(--ink); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference · Tooling · @axe-core/playwright</div>
+  <h1>The <code>toBeAccessible()</code> matcher recipe</h1>
+  <p class="sub">Copy-paste scaffold for packaging an axe scan as one reusable Playwright assertion. See lesson 07 for the why.</p>
+
+  <h2>Matcher contract</h2>
+  <table>
+    <tr><th>return field</th><th>type</th><th>role</th></tr>
+    <tr><td><code>pass</code></td><td><code>boolean</code></td><td>did the positive assertion succeed? (flip with <code>this.isNot</code> for <code>.not</code>)</td></tr>
+    <tr><td><code>message</code></td><td><code>() =&gt; string</code></td><td>rendered only on failure / <code>.not</code>-success</td></tr>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>optional; shows in the reporter step</td></tr>
+  </table>
+
+  <h2>Builder API map (sugar → engine)</h2>
+  <table>
+    <tr><th>AxeBuilder</th><th>= raw axe option</th><th>note</th></tr>
+    <tr><td><code>.withTags([...])</code></td><td><code>runOnly:{type:'tag',values}</code></td><td>selects rules by tag</td></tr>
+    <tr><td><code>.withRules([...])</code></td><td><code>rules:{ id:{enabled:true} }</code></td><td>force-enable specific rules</td></tr>
+    <tr><td><code>.options(BAR)</code></td><td>full options object</td><td><b>replaces</b> withTags/withRules — don't mix</td></tr>
+    <tr><td><code>.include(sel)</code> / <code>.exclude(sel)</code></td><td><code>context</code></td><td>scope the scan</td></tr>
+    <tr><td><code>.disableRules([...])</code></td><td><code>rules:{ id:{enabled:false} }</code></td><td>per-call skip (+ TODO/Jira)</td></tr>
+  </table>
+
+  <h2>Scaffold — <code>a11y-fixtures.ts</code></h2>
+  <pre><span class="c">// import test + a renamed baseExpect; export your own test + expect</span>
+import { test, expect as baseExpect, type Page, type TestInfo } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+const BAR = {
+  runOnly: { type: 'tag' as const,
+    values: ['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa','best-practice'] },
+  rules: { 'target-size': { enabled: true } },   <span class="c">// safety net; tag already runs it</span>
+};
+
+export const expect = baseExpect.extend({
+  async toBeAccessible(
+    subject: { page: Page; testInfo: TestInfo },
+    options?: { include?: string; disableRules?: string[] },
+  ) {
+    let b = new AxeBuilder({ page: subject.page }).options(BAR);
+    if (options?.include) b = b.include(options.include);
+    if (options?.disableRules?.length) b = b.disableRules(options.disableRules);
+
+    const results = await b.analyze();
+    const v = results.violations;
+    let pass = v.length === 0;
+
+    if (!pass) await subject.testInfo.attach('axe-results.json',
+      { body: JSON.stringify(results, null, 2), contentType: 'application/json' });
+
+    const summary = v.map(x =&gt;
+      `[${x.impact}] ${x.id} (${x.nodes.length}) → ${x.helpUrl}\n  ` +
+      x.nodes.map(n =&gt; n.target.join(' ')).join('\n  ')).join('\n\n');
+
+    if (this.isNot) pass = !pass;
+    return { pass, name: 'toBeAccessible',
+      message: () =&gt; `${v.length} violation(s):\n\n${summary}` };
+  },
+});
+export { test };
+
+<span class="c">// TS: make the matcher visible to the type system</span>
+declare global {
+  namespace PlaywrightTest {
+    interface Matchers&lt;R&gt; {
+      toBeAccessible(options?: { include?: string; disableRules?: string[] }): Promise&lt;R&gt;;
+    }
+  }
+}</pre>
+
+  <h2>Usage</h2>
+  <pre>import { test, expect } from './a11y-fixtures';
+
+test('@a11y page', async ({ page }, testInfo) =&gt; {
+  await page.goto('/login');
+  await expect({ page, testInfo }).toBeAccessible();
+  <span class="c">// scoped + temporary skip:</span>
+  <span class="c">// await expect({ page, testInfo }).toBeAccessible({ include:'nav', disableRules:['color-contrast'] }); // TODO JIRA-123</span>
+});</pre>
+
+  <h2>Three approaches, ranked</h2>
+  <table>
+    <tr><th>level</th><th>shape</th><th>fixes</th></tr>
+    <tr><td>1 simple</td><td><code>expect(results.violations).toEqual([])</code> inline</td><td>nothing — config dup + unreadable diff</td></tr>
+    <tr><td>2 fixture</td><td><code>makeAxeBuilder()</code> fixture w/ shared tags</td><td>config duplication</td></tr>
+    <tr><td>3 matcher</td><td><code>expect({page,testInfo}).toBeAccessible()</code></td><td>config dup <b>+</b> readable report (attach)</td></tr>
+  </table>
+
+  <p class="cite">Sources:
+    <a href="https://playwright.dev/docs/test-assertions#add-custom-matchers-using-expectextend">Playwright expect.extend</a> ·
+    <a href="https://github.com/microsoft/playwright/blob/main/docs/src/accessibility-testing-js.md">Playwright accessibility-testing guide</a> ·
+    <a href="https://github.com/dequelabs/axe-core-npm/tree/develop/packages/playwright">@axe-core/playwright README</a> ·
+    Backbase R&amp;D "Automated accessibility testing with Playwright" (approaches 1–3).
+  </p>
+</div>
+</body>
+</html>

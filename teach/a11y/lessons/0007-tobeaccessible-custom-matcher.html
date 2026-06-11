@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lesson 07 — Wrap your axe scan in a toBeAccessible() matcher</title>
+<style>
+  :root {
+    --ink: #16161d;
+    --muted: #5d5d72;
+    --line: #e6e6ef;
+    --accent: #4338ca;
+    --accent-soft: #eef0ff;
+    --bg: #fbfbfd;
+    --code-bg: #1e1e2e;
+    --code-ink: #e4e4f0;
+    --ok: #15803d;
+    --ok-soft: #e7f6ec;
+    --bad: #b91c1c;
+    --bad-soft: #fbeaea;
+    --serious: #c2410c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 3rem 1.25rem 6rem;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .kicker { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  h1 { font-size: 2.1rem; line-height: 1.15; letter-spacing: -.025em; margin: .35rem 0 .5rem; }
+  .lede { font-size: 1.12rem; color: #33333f; margin: 0 0 .5rem; }
+  .mission { font-size: .9rem; color: var(--muted); background: var(--accent-soft); border-radius: 8px; padding: .7rem .9rem; margin: 1.2rem 0 2rem; }
+  h2 { font-size: 1.3rem; letter-spacing: -.01em; margin: 2.6rem 0 .6rem; }
+  h3 { font-size: 1.02rem; margin: 1.6rem 0 .4rem; }
+  p { margin: .7rem 0; }
+  a { color: var(--accent); }
+  code { background: #f0f0f7; padding: .1em .4em; border-radius: 5px; font-size: .86em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .cite { font-size: .82rem; color: var(--muted); }
+  .cite a { color: var(--muted); }
+
+  pre.code {
+    background: var(--code-bg); color: var(--code-ink); border-radius: 12px;
+    padding: 1.1rem 1.2rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .82rem; line-height: 1.7; overflow-x: auto; margin: 1rem 0;
+  }
+  pre.code .k { color: #9db4ff; }
+  pre.code .s { color: #8ce99a; }
+  pre.code .c { color: #6b6b85; font-style: italic; }
+  pre.code .f { color: #ffd479; }
+  pre.code .hl { background: rgba(124,131,255,.22); border-radius: 4px; padding: 0 .15em; }
+
+  table { width: 100%; border-collapse: collapse; margin: .8rem 0; font-size: .92rem; }
+  th, td { text-align: left; padding: .5rem .65rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  td.yes { color: var(--ok); font-weight: 650; }
+  td.no { color: var(--muted); }
+  .pill { display: inline-block; padding: .05rem .55rem; border-radius: 999px; font-size: .74rem; font-weight: 700; color: #fff; background: var(--serious); }
+
+  .note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .95rem; }
+  .myth { background: var(--bad-soft); border-left: 3px solid var(--bad); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .95rem; }
+  .myth strong { color: var(--bad); }
+  .truth { background: var(--ok-soft); border-left: 3px solid var(--ok); padding: .8rem 1rem; border-radius: 0 8px 8px 0; margin: 1.4rem 0; font-size: .95rem; }
+  .truth strong { color: var(--ok); }
+
+  .quiz { border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem 1.4rem; margin: 1.4rem 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .quiz .q { font-weight: 650; margin: 0 0 .8rem; }
+  .quiz .scenario { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .8rem; background: #f0f0f7; padding: .5rem .7rem; border-radius: 8px; margin: 0 0 .8rem; white-space: pre-wrap; }
+  .quiz .opt {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    border-radius: 9px; padding: .6rem .8rem; margin: .4rem 0; font-size: .96rem;
+    transition: border-color .12s, background .12s;
+  }
+  .quiz .opt:hover { border-color: var(--accent); }
+  .quiz .opt.correct { background: var(--ok-soft); border-color: var(--ok); }
+  .quiz .opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
+  .quiz .opt:disabled { cursor: default; }
+  .quiz .fb { margin-top: .7rem; font-size: .9rem; padding: .6rem .8rem; border-radius: 8px; display: none; }
+  .quiz .fb.show { display: block; }
+  .quiz .fb.good { background: var(--ok-soft); color: var(--ok); }
+  .quiz .fb.bad { background: var(--bad-soft); color: var(--bad); }
+  .progress { font-size: .8rem; color: var(--muted); margin-top: 2rem; text-align: center; }
+  .ask { background: #16161d; color: #f3f3f8; border-radius: 12px; padding: 1.1rem 1.3rem; margin: 2.5rem 0 0; font-size: .95rem; }
+  .ask strong { color: #c7ccff; }
+  footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Lesson 07 · ~10 min · win: one reusable <code>await expect(...).toBeAccessible()</code></div>
+  <h1>Wrap your axe scan in a <code>toBeAccessible()</code> matcher</h1>
+  <p class="lede">Right now every spec repeats the same three lines: build an <code>AxeBuilder</code>, call <code>.analyze()</code>, then <code>expect(results.violations).toEqual([])</code>. Your R&amp;D doc calls out exactly why that hurts — <em>config duplication</em> and <em>a report that's hard to read</em>. This lesson collapses all of it into a single custom assertion that owns the config once and prints a report you can act on.</p>
+
+  <div class="mission">
+    <strong>Why this matters for the mission.</strong> Your <code>fix-wcag</code> skill scans many components. If the compliance bar (the tags + <code>target-size</code> enable) lives inline in every test, it drifts. A <code>toBeAccessible()</code> matcher makes the bar a <em>single source of truth</em> the skill writes once and reuses — and its failure message becomes the structured triage feed your skill reads to apply fixes.
+  </div>
+
+  <h2>1. The thing we're replacing</h2>
+  <p>This is the level-1 "simple approach" from the doc — and it's what your <code>scan.spec.ts</code> does today:</p>
+  <pre class="code"><span class="c">// repeated in every spec — the two caveats the doc warns about</span>
+<span class="k">const</span> results = <span class="k">await new</span> <span class="f">AxeBuilder</span>({ page })
+  .<span class="f">withTags</span>([<span class="s">'wcag2a'</span>,<span class="s">'wcag2aa'</span>,<span class="s">'wcag21a'</span>,<span class="s">'wcag21aa'</span>,<span class="s">'wcag22aa'</span>,<span class="s">'best-practice'</span>])
+  .<span class="f">analyze</span>();
+<span class="f">expect</span>(results.violations).<span class="f">toEqual</span>([]);  <span class="c">// ← caveat 2: diff-dumps a giant object, unreadable</span></pre>
+  <p>Two problems, straight from <span class="cite">the R&amp;D doc, p.2 "Caveats"</span>:</p>
+  <table>
+    <tr><th>Caveat</th><th>What it costs you</th></tr>
+    <tr><td>Duplication of config (tags, disabled rules, excludes)</td><td>Six tags + the <code>target-size</code> rule re-typed per file; one typo silently lowers the bar.</td></tr>
+    <tr><td>Report is hard to read/debug</td><td><code>toEqual([])</code> prints the whole violations array as a deep diff — no impact, no help URL, no selector at a glance.</td></tr>
+  </table>
+
+  <h2>2. The matcher contract (this is the whole API)</h2>
+  <p>A Playwright custom matcher is just a function you hand to <code>expect.extend</code>. It receives the value passed to <code>expect(...)</code> plus your own args, and it returns an object with two fields:</p>
+  <table>
+    <tr><th>field</th><th>type</th><th>meaning</th></tr>
+    <tr><td><code>pass</code></td><td><code>boolean</code></td><td>did the (positive) assertion succeed?</td></tr>
+    <tr><td><code>message</code></td><td><code>() =&gt; string</code></td><td>lazy string shown <em>when it fails</em> (and on <code>.not</code> success)</td></tr>
+  </table>
+  <p>That's it. Everything else — <code>name</code>, <code>this.isNot</code>, <code>this.utils</code> — is optional polish. <span class="cite">(<a href="https://playwright.dev/docs/test-assertions#add-custom-matchers-using-expectextend">Playwright docs: expect.extend</a>: "Custom matcher should return a <code>pass</code> flag … and a <code>message</code> callback that's used when the assertion fails.")</span></p>
+
+  <div class="note">
+    <strong>The subject can be anything.</strong> The official accessibility example passes <code>page</code>. We'll pass <code>{ page, testInfo }</code> — same shape your doc's level-3 example uses (<code>expect({ page, testInfo }).toBeAccessible()</code>) — because <code>testInfo</code> lets us <em>attach</em> the full axe JSON to the Playwright HTML report. That's how level 3 fixes the "hard to read" caveat.
+  </div>
+
+  <h2>3. Build it: <code>AxeBuilder</code> + <code>expect.extend</code> in one file</h2>
+  <p>Create <code>a11y-fixtures.ts</code>. It owns the bar (lifted straight from your <code>scan.spec.ts</code>), runs the scan, and turns violations into a readable message:</p>
+  <pre class="code"><span class="c">// a11y-fixtures.ts</span>
+<span class="k">import</span> { test, expect <span class="k">as</span> baseExpect, <span class="k">type</span> Page, <span class="k">type</span> TestInfo } <span class="k">from</span> <span class="s">'@playwright/test'</span>;
+<span class="k">import</span> AxeBuilder <span class="k">from</span> <span class="s">'@axe-core/playwright'</span>;
+
+<span class="c">// the compliance bar — defined ONCE (kills caveat 1)</span>
+<span class="k">const</span> BAR = {
+  runOnly: { type: <span class="s">'tag'</span> <span class="k">as const</span>,
+    values: [<span class="s">'wcag2a'</span>,<span class="s">'wcag2aa'</span>,<span class="s">'wcag21a'</span>,<span class="s">'wcag21aa'</span>,<span class="s">'wcag22aa'</span>,<span class="s">'best-practice'</span>] },
+  rules: { <span class="s">'target-size'</span>: { enabled: <span class="k">true</span> } }, <span class="c">// safety net (see lesson 06)</span>
+};
+
+<span class="k">type</span> A11yOptions = { include?: <span class="k">string</span>; disableRules?: <span class="k">string</span>[] };
+
+<span class="k">export const</span> expect = baseExpect.<span class="f">extend</span>({
+  <span class="k">async</span> <span class="f">toBeAccessible</span>(
+    subject: { page: Page; testInfo: TestInfo },
+    options?: A11yOptions,
+  ) {
+    <span class="k">const</span> name = <span class="s">'toBeAccessible'</span>;
+
+    <span class="c">// 1. build the scan from the shared bar + per-call tweaks</span>
+    <span class="k">let</span> builder = <span class="k">new</span> <span class="f">AxeBuilder</span>({ page: subject.page }).<span class="f">options</span>(BAR);
+    <span class="k">if</span> (options?.include) builder = builder.<span class="f">include</span>(options.include);
+    <span class="k">if</span> (options?.disableRules?.length) builder = builder.<span class="f">disableRules</span>(options.disableRules);
+
+    <span class="k">const</span> results = <span class="k">await</span> builder.<span class="f">analyze</span>();
+    <span class="k">const</span> v = results.violations;
+    <span class="k">let</span> pass = v.length === <span class="s">0</span>;
+
+    <span class="c">// 2. on failure, attach full JSON to the HTML report (kills caveat 2)</span>
+    <span class="k">if</span> (!pass) {
+      <span class="k">await</span> subject.testInfo.<span class="f">attach</span>(<span class="s">'axe-results.json'</span>, {
+        body: <span class="f">JSON.stringify</span>(results, <span class="k">null</span>, <span class="s">2</span>),
+        contentType: <span class="s">'application/json'</span>,
+      });
+    }
+
+    <span class="c">// 3. a short, scannable message — impact, rule, count, help, selector</span>
+    <span class="k">const</span> summary = v.<span class="f">map</span>(x =&gt;
+      <span class="s">`[</span>${x.impact}<span class="s">] </span>${x.id}<span class="s"> (</span>${x.nodes.length}<span class="s">) → </span>${x.helpUrl}<span class="s">\n  </span>${
+        x.nodes.<span class="f">map</span>(n =&gt; n.target.<span class="f">join</span>(<span class="s">' '</span>)).<span class="f">join</span>(<span class="s">'\n  '</span>)}`
+    ).<span class="f">join</span>(<span class="s">'\n\n'</span>);
+
+    <span class="k">if</span> (<span class="k">this</span>.isNot) pass = !pass; <span class="c">// support .not.toBeAccessible()</span>
+
+    <span class="k">return</span> {
+      pass,
+      name,
+      message: () =&gt;
+        <span class="k">this</span>.utils.<span class="f">matcherHint</span>(name, <span class="k">undefined</span>, <span class="k">undefined</span>, { isNot: <span class="k">this</span>.isNot }) +
+        <span class="s">`\n\n</span>${v.length}<span class="s"> violation(s):\n\n</span>${summary}`,
+    };
+  },
+});
+
+<span class="k">export</span> { test };</pre>
+
+  <div class="truth">
+    <strong>What you just gained.</strong> The bar lives in <em>one</em> <code>BAR</code> const. The assertion is one line. And a failure now prints <code>[serious] target-size (1) → https://dequeuniversity.com/...  button.small-button</code> instead of a 200-line array diff — plus the full JSON is downloadable from the report.
+  </div>
+
+  <h3>Tell TypeScript the matcher exists</h3>
+  <p><code>expect.extend</code> adds the method at runtime; TS needs a type to match. Augment Playwright's matcher interface (in the same file or a <code>.d.ts</code>):</p>
+  <pre class="code"><span class="k">declare global</span> {
+  <span class="k">namespace</span> PlaywrightTest {
+    <span class="k">interface</span> Matchers&lt;R&gt; {
+      <span class="f">toBeAccessible</span>(options?: { include?: <span class="k">string</span>; disableRules?: <span class="k">string</span>[] }): Promise&lt;R&gt;;
+    }
+  }
+}</pre>
+  <p class="cite">Pattern from <a href="https://github.com/microsoft/playwright/blob/main/docs/src/accessibility-testing-js.md">Playwright's own accessibility-testing guide</a> (shared-config fixture) + the <code>declare global</code> augmentation shown in the Playwright matcher docs.</p>
+
+  <h2>4. Use it</h2>
+  <p>Import <code>test</code> and <code>expect</code> from your fixture file instead of <code>@playwright/test</code>. The spec shrinks to intent:</p>
+  <pre class="code"><span class="c">// login.a11y.spec.ts</span>
+<span class="k">import</span> { test, expect } <span class="k">from</span> <span class="s">'./a11y-fixtures'</span>;
+
+test(<span class="s">'@a11y login page'</span>, <span class="k">async</span> ({ page }, testInfo) =&gt; {
+  <span class="k">await</span> page.<span class="f">goto</span>(<span class="s">'/login'</span>);
+  <span class="k">await</span> <span class="f">expect</span>({ page, testInfo }).<span class="f">toBeAccessible</span>();
+});
+
+test(<span class="s">'@a11y just the nav, ignoring a known issue'</span>, <span class="k">async</span> ({ page }, testInfo) =&gt; {
+  <span class="k">await</span> page.<span class="f">goto</span>(<span class="s">'/'</span>);
+  <span class="k">await</span> <span class="f">expect</span>({ page, testInfo }).<span class="f">toBeAccessible</span>({
+    include: <span class="s">'nav'</span>,
+    disableRules: [<span class="s">'color-contrast'</span>], <span class="c">// TODO: JIRA-123, awaiting design</span>
+  });
+});</pre>
+  <div class="note">
+    <strong>The <code>disableRules</code> / <code>include</code> escape hatches</strong> map to the doc's p.5 guidance: when a violation can't be fixed yet, skip it <em>per call</em> with a <code>TODO</code> + Jira ref — never by weakening the shared <code>BAR</code>. The bar stays honest; the exception is local and visible.
+  </div>
+
+  <h2>5. Check yourself</h2>
+  <p>Predict before clicking. Instant feedback.</p>
+  <div class="quiz" id="quiz"></div>
+  <div class="progress" id="progress">0 / 4 answered</div>
+
+  <div class="ask">
+    <strong>Your teacher is one message away.</strong> Want me to (a) refactor your real <code>scan.spec.ts</code> into this matcher form, (b) show the <em>fixture</em> variant (level 2 — a shared <code>makeAxeBuilder()</code>) so you can compare, or (c) wire the matcher's failure summary into <code>fix-wcag</code>'s triage step? Ask in chat.
+  </div>
+
+  <footer>
+    Lesson 07 · grounded in
+    <a href="https://playwright.dev/docs/test-assertions#add-custom-matchers-using-expectextend">Playwright expect.extend docs</a> ·
+    <a href="https://github.com/microsoft/playwright/blob/main/docs/src/accessibility-testing-js.md">Playwright accessibility-testing guide</a> ·
+    R&amp;D doc "Automated accessibility testing with Playwright" (approaches 1 &amp; 3) ·
+    builds on lesson 06 (tag vs enabled) &amp; your <code>scan.spec.ts</code> BAR.
+  </footer>
+</div>
+
+<script>
+  const questions = [
+    {
+      q: "A custom Playwright matcher must return an object. Which fields are the contract?",
+      opts: [
+        { t: "{ pass, message } — a boolean and a lazy string factory", ok: true, fb: "Right. pass says whether the positive assertion held; message() is called only to render a failure (or .not success)." },
+        { t: "{ ok, error } — a boolean and an Error", ok: false, fb: "No. Playwright/Jest use { pass, message }, where message is a () => string, not an Error." },
+        { t: "Just a boolean", ok: false, fb: "A boolean alone gives no failure output. You need message() for the readable report — the whole point here." }
+      ]
+    },
+    {
+      q: "Why pass { page, testInfo } as the subject instead of just page?",
+      opts: [
+        { t: "testInfo lets you attach the axe JSON to the HTML report on failure", ok: true, fb: "Exactly — that's how level 3 cures the 'report hard to read' caveat. With only page you can't attach." },
+        { t: "AxeBuilder requires testInfo", ok: false, fb: "No — AxeBuilder only needs { page }. testInfo is purely for reporting/attachments." },
+        { t: "It makes the matcher auto-retry", ok: false, fb: "It doesn't. Non-retrying; testInfo just carries the attach() API and test metadata." }
+      ]
+    },
+    {
+      q: "Where should the six WCAG tags + target-size enable live in this design?",
+      opts: [
+        { t: "In one BAR const inside the fixture, reused by every spec", ok: true, fb: "Correct — single source of truth. That's the fix for caveat 1 (duplication) and keeps the bar from drifting." },
+        { t: "Re-typed in each spec so each test is self-contained", ok: false, fb: "That's the level-1 problem you're escaping: one typo per file silently lowers the bar." },
+        { t: "In playwright.config.ts only", ok: false, fb: "AxeBuilder config isn't read from playwright.config. It belongs in the matcher/fixture that builds the scan." }
+      ]
+    },
+    {
+      q: "A color-contrast violation needs design input and can't be fixed now. Best move?",
+      opts: [
+        { t: "Drop color-contrast from the shared BAR", ok: false, fb: "No — that lowers the bar for the whole suite. The shared bar must stay honest." },
+        { t: "Pass disableRules:['color-contrast'] on that one call, with a TODO + Jira ref", ok: true, fb: "Right — per-call, visible, temporary. Matches the doc's p.5 guidance: skip locally, track it, fix soon." },
+        { t: "Wrap the assertion in try/catch and swallow it", ok: false, fb: "That hides the failure with no record — the opposite of the honest-reporting your skill requires." }
+      ]
+    }
+  ];
+
+  const quizEl = document.getElementById('quiz');
+  const progressEl = document.getElementById('progress');
+  let answered = 0;
+
+  questions.forEach((item, qi) => {
+    const block = document.createElement('div');
+    if (qi > 0) block.style.marginTop = '1.6rem';
+    const q = document.createElement('p');
+    q.className = 'q';
+    q.textContent = (qi + 1) + '. ' + item.q;
+    block.appendChild(q);
+
+    const fb = document.createElement('div');
+    fb.className = 'fb';
+
+    item.opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.textContent = opt.t;
+      btn.addEventListener('click', () => {
+        if (block.dataset.done) return;
+        block.dataset.done = '1';
+        answered++;
+        progressEl.textContent = answered + ' / ' + questions.length + ' answered' +
+          (answered === questions.length ? ' — you can now package any scan as a matcher. Tell your teacher.' : '');
+        [...block.querySelectorAll('.opt')].forEach(b => b.disabled = true);
+        btn.classList.add(opt.ok ? 'correct' : 'wrong');
+        if (!opt.ok) {
+          const right = [...block.querySelectorAll('.opt')][item.opts.findIndex(o => o.ok)];
+          if (right) right.classList.add('correct');
+        }
+        fb.textContent = opt.fb;
+        fb.classList.add('show', opt.ok ? 'good' : 'bad');
+      });
+      block.appendChild(btn);
+    });
+
+    block.appendChild(fb);
+    quizEl.appendChild(block);
+  });
+</script>
+</body>
+</html>
