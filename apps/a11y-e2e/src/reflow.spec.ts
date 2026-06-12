@@ -36,6 +36,7 @@ const ROUTES = [
   '/dialog',
   '/duplicate-main',
   '/label-content-name-mismatch',
+  '/exceed-viewport',
   '/axe-rules',
   '/axe-rules-by-tag',
 ];
