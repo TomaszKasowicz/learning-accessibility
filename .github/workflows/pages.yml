@@ -25,11 +25,12 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - run: npm ci
 
       - run: >
-          npx nx build a11y --configuration production
+          npm exec nx build a11y --configuration production
           --base-href=/${{ github.event.repository.name }}/
           --deploy-url=/${{ github.event.repository.name }}/
 
