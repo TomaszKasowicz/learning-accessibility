@@ -23,12 +23,13 @@ export class AxeService {
     return this.axe;
   }
 
-  async run(context: Element): Promise<void> {
+  async run(context: Element | undefined): Promise<void> {
     this.running.set(true);
 
     try {
       const axe = await this.initialize();
-      const results: AxeResults = await axe.run(context , AXE_RUN_OPTIONS);
+      const runner = context ? axe.run(context , AXE_RUN_OPTIONS) : axe.run(AXE_RUN_OPTIONS);
+      const results: AxeResults = await runner;
 
       this.violations.set(results.violations);
       this.hasRun.set(true);

@@ -81,12 +81,12 @@ import { AxeService } from './axe.service';
 
     .axe-results-badge--pass {
       background: color-mix(in srgb, #2e7d32 15%, transparent);
-      color: #2e7d32;
+      color: #1e5321; // This allows for 7:1 Contrast Ratio (WCAG AAA)
     }
 
     .axe-results-badge--fail {
       background: color-mix(in srgb, #c62828 15%, transparent);
-      color: #c62828;
+      color: #891c1c; // This allows for 7:1 Contrast Ratio (WCAG AAA)
     }
 
     .axe-results-empty,

@@ -33,9 +33,11 @@ import { getNavRoutes } from '../../app.routes';
     AxeViolations,
   ],
   template: `
-    <a class="skip-link" href="javascript:void(0)" (click)="skipToContent(mainContent)">
-      Skip to content
-    </a>
+    <aside>
+      <a class="skip-link" href="javascript:void(0)" (click)="skipToContent(mainContent)">
+        Skip to content
+      </a>
+    </aside>
 
     <mat-sidenav-container class="shell-container">
       <mat-sidenav
@@ -71,8 +73,21 @@ import { getNavRoutes } from '../../app.routes';
               <mat-icon>menu</mat-icon>
             </button>
           }
-          <header class="shell-title">{{ title }}</header>
+          <header class="shell-title"><h1>{{ title }}</h1></header>
           <span class="toolbar-spacer"></span>
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="axe.running()"
+            (click)="runAxeTest(routeContent)"
+          >
+           <!-- Due to race condition, Sometimes We Get AXE Core Violations here when axe is running -->
+            @if (axe.running()) {
+              <mat-spinner diameter="18" />
+            } @else {
+              Run Axe test (main content)
+            }
+          </button>
           <button
             mat-stroked-button
             type="button"
@@ -82,7 +97,7 @@ import { getNavRoutes } from '../../app.routes';
             @if (axe.running()) {
               <mat-spinner diameter="18" />
             } @else {
-              Run Axe test
+              Run Axe test (full page)
             }
           </button>
         </mat-toolbar>
@@ -195,8 +210,8 @@ export class Shell {
       });
   }
 
-  protected async runAxeTest(): Promise<void> {
-    await this.axe.run(this.routeContent().nativeElement);
+  protected async runAxeTest(context?: Element): Promise<void> {
+    await this.axe.run(context);
   }
 
   protected toggleDrawer(): void {
