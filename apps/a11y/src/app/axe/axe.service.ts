@@ -17,7 +17,9 @@ export class AxeService {
       return this.axe;
     }
 
-    this.axe = await import('axe-core');
+    const module = await import('axe-core');
+    // Production bundles wrap the CJS axe-core export in `default`.
+    this.axe = (module as { default?: AxeModule }).default ?? module;
     this.axe.setup(document);
 
     return this.axe;
