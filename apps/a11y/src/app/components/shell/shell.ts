@@ -8,12 +8,14 @@ import {
   viewChild,
 } from '@angular/core';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatListItem, MatNavList } from '@angular/material/list';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatSidenav, MatSidenavContainer, MatSidenavContent } from '@angular/material/sidenav';
+import { MatToolbar } from '@angular/material/toolbar';
+
+
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AxeViolations } from '../../axe/axe-violations';
@@ -24,20 +26,21 @@ import { getNavRoutes } from '../../app.routes';
   selector: 'app-shell',
   imports: [
     RouterModule,
-    MatSidenavModule,
-    MatToolbarModule,
-    MatIconModule,
-    MatButtonModule,
-    MatListModule,
-    MatProgressSpinnerModule,
+    MatSidenav,
+    MatSidenavContainer,
+    MatSidenavContent,
+    MatToolbar,
+    MatIcon,
+    MatButton,
+    MatNavList,
+    MatListItem,
+    MatProgressSpinner,
     AxeViolations,
   ],
   template: `
     <aside>
+      <!-- Using href as #main-content here to make ARC Tool happy -->
       <a href="#main-content" class="skip-link" (click)="skipToContent($event, mainContent)">Skip to content</a>
-      <!-- <a class="skip-link" href="javascript:void(0)" (click)="skipToContent(mainContent)">
-        Skip to content
-      </a> -->
     </aside>
 
     <mat-sidenav-container class="shell-container">
@@ -77,26 +80,36 @@ import { getNavRoutes } from '../../app.routes';
           <header class="shell-title">{{ title }}</header>
           <span class="toolbar-spacer"></span>
           <button
-            mat-stroked-button
-            type="button"
+            matButton="outlined"
             [disabled]="axe.running()"
             (click)="runAxeTest(routeContent)"
           >
            <!-- Due to race condition, Sometimes We Get AXE Core Violations here when axe is running -->
             @if (axe.running()) {
-              <mat-spinner diameter="18" />
+              <mat-progress-spinner
+                progressIndicator
+                mode="indeterminate"
+                diameter="20"
+                aria-label="Loading"
+                tabindex="-1"
+              />
             } @else {
               Run Axe test (content)
             }
           </button>
           <button
-            mat-stroked-button
-            type="button"
+            matButton="outlined"
             [disabled]="axe.running()"
             (click)="runAxeTest()"
           >
             @if (axe.running()) {
-              <mat-spinner diameter="18" />
+              <mat-progress-spinner
+                progressIndicator
+                mode="indeterminate"
+                diameter="20"
+                aria-label="Loading"
+                tabindex="-1"
+              />
             } @else {
               Run Axe test (full page)
             }
