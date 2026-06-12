@@ -38,6 +38,18 @@ export const accessibleMatcher = {
     const results = await axe.analyze(context.page, options);
     const pass = results.violations.length === 0;
 
+    const { violations, incomplete, inapplicable, timestamp, toolOptions, url } = results;
+    // Always attach the full results JSON
+    await context.testInfo.attach('axe-results.json', {
+      body: JSON.stringify({ violations, incomplete, inapplicable, timestamp, toolOptions, url }, null, 2),
+      contentType: 'application/json',
+    });
+
+    context.testInfo.annotations.push({
+      type: 'accessibility',
+      description: `Expected no violations, but found ${results.violations.length}:\n\n${formatViolations(results.violations)}`,
+    })
+
     if (!pass) {
       await attachPageDebugScreenshot(
         context.page,
