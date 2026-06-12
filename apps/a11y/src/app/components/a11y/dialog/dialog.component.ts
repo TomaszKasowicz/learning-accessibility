@@ -6,7 +6,7 @@ import { MatButtonModule } from "@angular/material/button";
 @Component({
   selector: 'app-dialog',
   template: `
-    <h1>Dialog Check AXE Violations in Dialog</h1>
+    <h1>Check AXE Violations in Dialog</h1>
 
     <button mat-button (click)="openDialog()">Open Dialog</button>
   `,
