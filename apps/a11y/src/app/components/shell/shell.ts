@@ -85,7 +85,7 @@ import { getNavRoutes } from '../../app.routes';
             @if (axe.running()) {
               <mat-spinner diameter="18" />
             } @else {
-              Run Axe test (main content)
+              Run Axe test (content)
             }
           </button>
           <button
@@ -206,7 +206,8 @@ export class Shell {
           return;
         }
 
-        this.mainContent().nativeElement.focus();
+        // This line would steal focus from navigation menu to content. But it is discouraged
+        // this.mainContent().nativeElement.focus();
       });
   }
 

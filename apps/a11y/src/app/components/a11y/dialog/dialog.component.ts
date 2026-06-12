@@ -1,17 +1,18 @@
 import { Component, ElementRef, inject } from "@angular/core";
 import { Dialog, DialogModule} from '@angular/cdk/dialog';
 import { DialogContentComponent, DialogContentData } from "./dialog-content.component";
+import { MatButtonModule } from "@angular/material/button";
 
 @Component({
   selector: 'app-dialog',
   template: `
-    <h1>Dialog</h1>
+    <h1>Dialog Check AXE Violations in Dialog</h1>
 
-    <button (click)="openDialog()">Open Dialog</button>
+    <button mat-button (click)="openDialog()">Open Dialog</button>
   `,
   styles: `
   `,
-  imports: [DialogModule],
+  imports: [DialogModule, MatButtonModule],
 })
 export class DialogComponent {
   private readonly dialog = inject(Dialog);

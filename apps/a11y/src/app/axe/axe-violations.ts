@@ -2,10 +2,11 @@ import { Component, inject } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import type { Result } from 'axe-core';
 import { AxeService } from './axe.service';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-axe-violations',
-  imports: [MatListModule],
+  imports: [MatListModule, MatButtonModule],
   template: `
     @if (axe.hasRun()) {
       <section
@@ -38,12 +39,13 @@ import { AxeService } from './axe.service';
               >
                 <span matListItemTitle>{{ violation.help }} ({{ violation.tags.join(', ') }})</span>
                 <span matListItemLine>
-                  {{ violation.id }} · {{ violation.impact ?? 'unknown' }} impact (<a href="{{ violation.helpUrl }}" target="_blank">{{ violation.helpUrl }}</a>)
+                  {{ violation.id }} · {{ violation.impact ?? 'unknown' }} impact
                 </span>
                 <span matListItemLine>
                   Description: {{ violation.description }}
                 </span>
               </button>
+              <a mat-button href="{{ violation.helpUrl }}" target="_blank">{{ violation.helpUrl }}</a>
             }
           </mat-action-list>
           <p class="axe-results-hint">

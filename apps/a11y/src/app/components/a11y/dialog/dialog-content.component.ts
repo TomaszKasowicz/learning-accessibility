@@ -17,9 +17,11 @@ export type DialogContentData = {
       Data from Host: {{ data.message }}
     </p>
     <div>
-      <button (click)="dialogRef.close('OK')">OK</button>
+      <button mat-button (click)="dialogRef.close('OK')">OK</button>
 
-      <button (click)="dialogRef.close()">Cancel</button>
+      <button mat-button (click)="dialogRef.close()">Cancel</button>
+
+      <button mat-button aria-label="Foo">Label Viotaion</button>
 
       <button
         mat-button
