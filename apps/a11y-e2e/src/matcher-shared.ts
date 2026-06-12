@@ -1,4 +1,4 @@
-import { Locator, test } from '@playwright/test';
+import { Locator, Page, test } from '@playwright/test';
 
 export type MatcherExclusion = Locator | string;
 
@@ -149,12 +149,72 @@ function removeDebugHighlights(debugId: string): void {
   document.getElementById(debugId)?.remove();
 }
 
-export async function attachDebugScreenshot(
-  root: Locator,
-  issues: { selector: string }[],
-  options: { debugId: string; label: string; attachmentName: string },
+/** Runs in the browser — passed to page.evaluate(). */
+function applyPageDebugHighlights(args: {
+  selectors: string[];
+  debugId: string;
+  label: string;
+}): void {
+  document.getElementById(args.debugId)?.remove();
+
+  const debugRoot = document.createElement('div');
+  debugRoot.id = args.debugId;
+  debugRoot.style.cssText =
+    'position:fixed;inset:0;pointer-events:none;z-index:2147483647;';
+
+  for (const selector of args.selectors) {
+    const el = document.querySelector(selector);
+    if (!(el instanceof HTMLElement)) continue;
+
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) continue;
+
+    const overlay = document.createElement('div');
+    overlay.setAttribute('data-a11y-debug-overlay', selector);
+    overlay.style.cssText = [
+      'position:fixed',
+      `left:${rect.left}px`,
+      `top:${rect.top}px`,
+      `width:${rect.width}px`,
+      `height:${rect.height}px`,
+      'border:4px dashed #c62828',
+      'box-sizing:border-box',
+      'pointer-events:none',
+      'box-shadow:0 0 0 2px #fff, 0 0 8px #c62828',
+    ].join(';');
+
+    const tag = document.createElement('span');
+    tag.textContent = args.label;
+    tag.style.cssText = [
+      'position:absolute',
+      'top:-1.4rem',
+      'left:0',
+      'padding:0.1rem 0.35rem',
+      'background:#c62828',
+      'color:#fff',
+      'font:600 11px/1.2 sans-serif',
+      'white-space:nowrap',
+    ].join(';');
+    overlay.appendChild(tag);
+    debugRoot.appendChild(overlay);
+  }
+
+  document.body.appendChild(debugRoot);
+}
+
+export type DebugScreenshotOptions = {
+  debugId: string;
+  label: string;
+  attachmentName: string;
+};
+
+export type DebugScreenshotIssue = { selector: string };
+
+async function captureDebugScreenshot(
+  page: Page,
+  applyHighlights: () => Promise<void>,
+  options: DebugScreenshotOptions,
 ): Promise<void> {
-  const page = root.page();
   const originalViewport =
     page.viewportSize() ??
     (await page.evaluate(() => ({
@@ -178,14 +238,8 @@ export async function attachDebugScreenshot(
     expandedHeight,
   );
 
-  const selectors = issues.map((issue) => issue.selector);
-
   try {
-    await root.evaluate(applyDebugHighlights, {
-      selectors,
-      debugId: options.debugId,
-      label: options.label,
-    });
+    await applyHighlights();
 
     const screenshot = await page.screenshot();
     await test.info().attach(options.attachmentName, {
@@ -194,5 +248,45 @@ export async function attachDebugScreenshot(
     });
   } finally {
     await page.evaluate(removeDebugHighlights, options.debugId);
+    await page.setViewportSize(originalViewport);
   }
+}
+
+export async function attachDebugScreenshot(
+  root: Locator,
+  issues: DebugScreenshotIssue[],
+  options: DebugScreenshotOptions,
+): Promise<void> {
+  const page = root.page();
+  const selectors = issues.map((issue) => issue.selector);
+
+  await captureDebugScreenshot(
+    page,
+    () =>
+      root.evaluate(applyDebugHighlights, {
+        selectors,
+        debugId: options.debugId,
+        label: options.label,
+      }),
+    options,
+  );
+}
+
+export async function attachPageDebugScreenshot(
+  page: Page,
+  issues: DebugScreenshotIssue[],
+  options: DebugScreenshotOptions,
+): Promise<void> {
+  const selectors = issues.map((issue) => issue.selector);
+
+  await captureDebugScreenshot(
+    page,
+    () =>
+      page.evaluate(applyPageDebugHighlights, {
+        selectors,
+        debugId: options.debugId,
+        label: options.label,
+      }),
+    options,
+  );
 }
