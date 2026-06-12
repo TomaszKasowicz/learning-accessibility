@@ -9,6 +9,7 @@ import { Component } from '@angular/core';
       <strong>"Buy now"</strong> button scrolls under the sticky bar, its focus
       indicator is hidden behind it — a WCAG 2.2 SC 2.4.11 failure.
     </p>
+    <strong>THIS CANNOT BE DETECTED BY AXE</strong>
 
     <div class="scroll-area">
       @for (i of items; track i) {
