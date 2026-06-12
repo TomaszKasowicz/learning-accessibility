@@ -11,6 +11,7 @@ import { AxeRulesByTagComponent } from './components/axe-rules/axe-rules-by-tag.
 import { AxeRulesComponent } from './components/axe-rules/axe-rules.component';
 import { DialogComponent } from './components/a11y/dialog/dialog.component';
 import { DuplicateMainComponent } from './components/a11y/duplicate-main/duplicate-main.component';
+import { LabelContentNameMismatchComponent } from './components/a11y/label-content-name-mismatch/label-content-name-mismatch.component';
 
 export interface NavRoute {
   path: string;
@@ -47,6 +48,11 @@ export const appRoutes: Route[] = [
     path: 'duplicate-main',
     component: DuplicateMainComponent,
     title: 'Duplicate Main',
+  },
+  {
+    path: 'label-content-name-mismatch',
+    component: LabelContentNameMismatchComponent,
+    title: 'Label Content Name Mismatch',
   },
   { path: 'axe-rules', component: AxeRulesComponent, title: 'Axe Rules' },
   {
