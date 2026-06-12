@@ -13,7 +13,9 @@ interface Tab {
 @Component({
   selector: 'app-forbidden-children',
   template: `
-    <h1>Forbidden Children - OK example</h1>
+    <h1>Forbidden Children</h1>
+
+    <h2>OK example</h2>
 
     <div ngTabs>
       <div ngTabList selectionMode="explicit" [selectedTab]="selectedTab()">
@@ -37,12 +39,12 @@ interface Tab {
 
 
     <hr />
-    <h1>Forbidden Children - NOT OK example</h1>
+    <h2>NOT OK example</h2>
     <div #wrongTablist role="tablist" id="not-ok-parent-tablist">
-      - Tablist
+      - I am a div element with role="tablist"
       <div role="tablist" id="not-ok-child-tablist">
-        - Another tablist inside the first tablist : not allowed!
-        <br/>
+        <p>- And I am another div element with role="tablist" within the one above : not allowed!</p>
+
         <button role="tab" aria-controls="not-ok-tab-1">Not OK - Tab 1</button>
       </div>
       <div role="tabpanel" id="not-ok-tab-1" aria-labelledby="not-ok-tab-1">

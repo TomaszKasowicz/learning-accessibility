@@ -34,9 +34,10 @@ import { getNavRoutes } from '../../app.routes';
   ],
   template: `
     <aside>
-      <a class="skip-link" href="javascript:void(0)" (click)="skipToContent(mainContent)">
+      <a href="#main-content" class="skip-link" (click)="skipToContent($event, mainContent)">Skip to content</a>
+      <!-- <a class="skip-link" href="javascript:void(0)" (click)="skipToContent(mainContent)">
         Skip to content
-      </a>
+      </a> -->
     </aside>
 
     <mat-sidenav-container class="shell-container">
@@ -73,7 +74,7 @@ import { getNavRoutes } from '../../app.routes';
               <mat-icon>menu</mat-icon>
             </button>
           }
-          <header class="shell-title"><h1>{{ title }}</h1></header>
+          <header class="shell-title">{{ title }}</header>
           <span class="toolbar-spacer"></span>
           <button
             mat-stroked-button
@@ -185,6 +186,8 @@ export class Shell {
     { initialValue: false },
   );
 
+  protected readonly skipLinkPath = `${this.router.url}#main-content`;
+
   constructor() {
     effect(() => {
       this.drawerOpen.set(!this.isMobile());
@@ -225,7 +228,8 @@ export class Shell {
     }
   }
 
-  protected skipToContent(mainContent: HTMLElement): void {
+  protected skipToContent(event: Event, mainContent: HTMLElement): void {
+    event.preventDefault();
     mainContent.focus();
   }
 }

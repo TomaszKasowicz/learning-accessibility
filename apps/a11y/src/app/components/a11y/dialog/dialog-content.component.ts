@@ -17,32 +17,44 @@ export type DialogContentData = {
       Data from Host: {{ data.message }}
     </p>
     <div>
-      <button mat-button (click)="dialogRef.close('OK')">OK</button>
+      <div>
+        <button mat-button (click)="dialogRef.close('OK')">OK</button>
 
-      <button mat-button (click)="dialogRef.close()">Cancel</button>
+        <button mat-button (click)="dialogRef.close()">Cancel</button>
 
-      <button mat-button aria-label="Foo">Label Violation</button>
-
+        <button mat-button aria-label="Foo">Label Violation</button>
+      </div>
+      <div>
       <button
         mat-button
         type="button"
         [disabled]="axe.running()"
-        (click)="runAxeTest(data.elementRef)"
+        (click)="runAxeTest(data.elementRef.nativeElement)"
         class="host-axe"
       >
       <!-- Mat Spinner was causing AXE Violation when running Axe on Self but only for the 1st time -->
         Run Axe test on Host
       </button>
 
-      <button
-        mat-button
-        type="button"
-        [disabled]="axe.running()"
-        (click)="runAxeTest(elementRef)"
-        class="self-axe"
-      >
-          Run Axe test on Self
-      </button>
+        <button
+          mat-button
+          type="button"
+          [disabled]="axe.running()"
+          (click)="runAxeTest(elementRef.nativeElement)"
+          class="self-axe"
+        >
+            Run Axe test on Self
+        </button>
+        <button
+          mat-button
+          type="button"
+          [disabled]="axe.running()"
+          (click)="runAxeTest()"
+          class="self-axe"
+        >
+            Run Axe test full page
+        </button>
+      </div>
     </div>
   `,
   styles: `
@@ -60,14 +72,8 @@ export class DialogContentComponent {
   protected readonly axe = inject(AxeService);
   protected readonly elementRef = inject(ElementRef<HTMLElement>);
 
-  protected async runAxeTest(elementRef: ElementRef<HTMLElement>): Promise<void> {
-    if (!elementRef.nativeElement) {
-      console.log('No element ref found');
-      return;
-    }
-
-    console.log('Running axe test on element', elementRef.nativeElement);
-
-    await this.axe.run(elementRef.nativeElement);
+  protected async runAxeTest(nativeElement?: HTMLElement): Promise<void> {
+    console.log('Running axe test on element', nativeElement);
+    await this.axe.run(nativeElement);
   }
 }

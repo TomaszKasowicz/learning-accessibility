@@ -3,8 +3,9 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-home',
   template: `
+  <h1>A simple application to demonstrate accessibility issues and best practices.</h1>
   <section id="info">
-    <h2>A simple application to demonstrate accessibility issues and best practices.</h2>
+    <h2>Info</h2>
 
     <ul>
       <li>Click on any of the links below to navigate to the corresponding page.</li>

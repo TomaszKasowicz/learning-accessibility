@@ -27,6 +27,7 @@ export class DialogComponent {
       restoreFocus: true,
       autoFocus: true,
       disableClose: false,
+      ariaLabel: 'Dialog Content'
     });
 
     dialogRef.closed.subscribe(v => {
