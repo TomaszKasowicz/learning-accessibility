@@ -30,7 +30,7 @@ jobs:
       - run: npm ci
 
       - run: >
-          npm exec nx build a11y --configuration production
+          npx nx run a11y:build:production
           --base-href=/${{ github.event.repository.name }}/
           --deploy-url=/${{ github.event.repository.name }}/
 
