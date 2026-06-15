@@ -13,6 +13,7 @@ import { DialogComponent } from './components/a11y/dialog/dialog.component';
 import { DuplicateMainComponent } from './components/a11y/duplicate-main/duplicate-main.component';
 import { LabelContentNameMismatchComponent } from './components/a11y/label-content-name-mismatch/label-content-name-mismatch.component';
 import { ExceedViewportComponent } from './components/a11y/exceed-viewport/exceed-viewport.component';
+import { FocusableAndInteractiveComponent } from './components/a11y/focusable-and-interactive/focusable-and-interactive';
 
 export interface NavRoute {
   path: string;
@@ -60,11 +61,17 @@ export const appRoutes: Route[] = [
     component: ExceedViewportComponent,
     title: 'Exceed Viewport',
   },
+  {
+    path: 'focusable-and-interactive',
+    component: FocusableAndInteractiveComponent,
+    title: 'Focusable and Interactive',
+  },
   { path: 'axe-rules', component: AxeRulesComponent, title: 'Axe Rules' },
   {
     path: 'axe-rules-by-tag',
     component: AxeRulesByTagComponent,
     title: 'Axe Rules by Tag',
   },
+
   { path: '**', redirectTo: 'home' },
 ];
