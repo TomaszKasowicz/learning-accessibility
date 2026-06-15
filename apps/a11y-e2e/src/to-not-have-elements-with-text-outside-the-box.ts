@@ -1,4 +1,4 @@
-import { Locator } from '@playwright/test';
+import { Locator, expect as baseExpect } from '@playwright/test';
 import {
   attachDebugScreenshot,
   DEFAULT_TOLERANCE_PX,
@@ -165,51 +165,37 @@ function formatTextOutsideBoxIssues(issues: TextOutsideBoxIssue[]): string {
     .join('\n\n');
 }
 
-export const textOutsideBoxMatcher = {
-  async toNotHaveElementsWithTextOutsideTheBox(
-    this: { isNot?: boolean },
+
+export const textOutsideBoxExpect = baseExpect.extend({
+  async toHaveElementsWithTextOutsideTheBox(
     root: Locator,
-    exclusions: TextOutsideBoxExclusion[] = [],
-    options?: { tolerance?: number },
-  ) {
-    const tolerance = options?.tolerance ?? DEFAULT_TOLERANCE_PX;
-    const issues = await findTextOutsideBoxIssues(root, exclusions, tolerance);
-    const pass = issues.length === 0;
+    exclude: TextOutsideBoxExclusion[] = [], options?: { tolerance?: number }) {
+      const tolerance = options?.tolerance ?? DEFAULT_TOLERANCE_PX;
+      const issues = await findTextOutsideBoxIssues(root, exclude, tolerance);
+      const pass = issues.length === 0;
 
-    if (!pass) {
-      await attachDebugScreenshot(root, issues, {
-        debugId: 'a11y-text-outside-box-debug',
-        label: 'text outside box',
-        attachmentName: 'text-outside-box.png',
-      });
+      if (!pass) {
+        await attachDebugScreenshot(root, issues, {
+          debugId: 'a11y-text-outside-box-debug',
+          label: 'text outside box',
+          attachmentName: 'text-outside-box.png',
+        });
+      }
+
+      return {
+        pass: this.isNot ? !pass : pass,
+        name: 'toNotHaveElementsWithTextOutsideTheBox',
+        expected: [],
+        actual: issues,
+        message: () => {
+          if (this.isNot) {
+            return pass
+              ? `Expected elements with text outside their box inside root, but found none`
+              : `Expected no text-outside-box issues, but found ${issues.length}:\n\n${formatTextOutsideBoxIssues(issues)}`;
+          }
+
+          return `Expected no elements with text outside their box inside root, but found ${issues.length}:\n\n${formatTextOutsideBoxIssues(issues)}`;
+        },
+      };
     }
-
-    return {
-      pass: this.isNot ? !pass : pass,
-      name: 'toNotHaveElementsWithTextOutsideTheBox',
-      expected: [],
-      actual: issues,
-      message: () => {
-        if (this.isNot) {
-          return pass
-            ? `Expected elements with text outside their box inside root, but found none`
-            : `Expected no text-outside-box issues, but found ${issues.length}:\n\n${formatTextOutsideBoxIssues(issues)}`;
-        }
-
-        return `Expected no elements with text outside their box inside root, but found ${issues.length}:\n\n${formatTextOutsideBoxIssues(issues)}`;
-      },
-    };
-  },
-};
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace PlaywrightTest {
-    interface Matchers<R> {
-      toNotHaveElementsWithTextOutsideTheBox(
-        exclusions?: TextOutsideBoxExclusion[],
-        options?: { tolerance?: number },
-      ): Promise<R>;
-    }
-  }
-}
+});
