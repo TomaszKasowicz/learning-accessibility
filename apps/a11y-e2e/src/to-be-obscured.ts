@@ -1,4 +1,4 @@
-import { Locator } from '@playwright/test';
+import { Locator, expect as baseExpect } from '@playwright/test';
 import { attachDebugScreenshot } from './matcher-shared';
 
 export type ObscuredAnalysis = {
@@ -44,39 +44,39 @@ export async function analyzeElementObscured(
   return locator.evaluate(analyzeObscuration);
 }
 
-export const obscuredMatcher = {
-  async toBeObscured(this: { isNot?: boolean }, locator: Locator) {
+export const obscuredExpect = baseExpect.extend({
+  async toBeObscured(locator: Locator) {
     const { obscured, blockerLabel } = await analyzeElementObscured(locator);
-    const conditionMet = obscured;
 
-    if (conditionMet) {
-      await locator.scrollIntoViewIfNeeded();
-      await attachDebugScreenshot(locator, [{ selector: ':scope' }], {
-        debugId: 'a11y-obscured-debug',
-        label: 'obscured',
-        attachmentName: 'focus-obscured.png',
-      });
+    if (obscured) {
+      await attachScreenshot(locator);
     }
 
+    const el = await locator.textContent()
+
     return {
-      pass: conditionMet,
+      pass: this.isNot ? obscured : !obscured,
       name: 'toBeObscured',
       message: () => {
         const blocker = blockerLabel ? ` (covered by ${blockerLabel})` : '';
 
         return this.isNot
-          ? `Expected element not to be obscured, but its center is covered by other content${blocker}`
-          : `Expected element to be obscured, but it is fully visible`;
-      },
-    };
-  },
-};
+          ? `Expected ${el} to be obscured, but it is fully visible`
+          : `Expected ${el} not to be obscured, but its center is covered by other content${blocker}`;
 
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace PlaywrightTest {
-    interface Matchers<R> {
-      toBeObscured(): Promise<R>;
-    }
+      },
+      log: [blockerLabel ? ` (covered by ${blockerLabel})` : ''],
+    };
   }
+});
+
+async function attachScreenshot(locator: Locator) {
+  await locator.scrollIntoViewIfNeeded();
+  await attachDebugScreenshot(locator, [{ selector: ':scope' }], {
+    debugId: 'a11y-obscured-debug',
+    label: 'obscured',
+    attachmentName: 'focus-obscured.png',
+  });
+
+
 }

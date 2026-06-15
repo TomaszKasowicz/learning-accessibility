@@ -1,5 +1,5 @@
 import { expect as baseExpect, mergeExpects } from '@playwright/test';
-import { obscuredMatcher } from './to-be-obscured';
+import { obscuredExpect } from './to-be-obscured';
 import { textOutsideBoxMatcher } from './to-not-have-elements-with-text-outside-the-box';
 import { viewportOverflowMatcher } from './to-not-overflow-viewport';
 import { focusOrderExpect } from './to-have-focus-order';
@@ -26,8 +26,6 @@ export { findTextOutsideBoxIssues } from './to-not-have-elements-with-text-outsi
 
 
 const extendedExpect = baseExpect
-// .extend(accessibleMatcher)
-.extend(obscuredMatcher)
 .extend(viewportOverflowMatcher)
 .extend(textOutsideBoxMatcher)
 
@@ -36,4 +34,5 @@ export const expect = mergeExpects(
   focusOrderExpect,
   extendedExpect,
   accessibleExpect,
+  obscuredExpect
 );
