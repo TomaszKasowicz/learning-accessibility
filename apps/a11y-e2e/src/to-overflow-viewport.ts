@@ -33,6 +33,10 @@ function scanOverflowIssues(
 ): ScanResult {
   const { tolerance, exclusionSelectors } = args;
 
+  // Layout viewport width excluding any scrollbar (more accurate than
+  // window.innerWidth, which includes the scrollbar gutter).
+  const viewportWidth = document.documentElement.clientWidth;
+
   const relativeSelector = (el: Element): string => {
     if (el === root) return ':scope';
 
@@ -85,7 +89,7 @@ function scanOverflowIssues(
       const textRect = range.getBoundingClientRect();
 
       if (
-        textRect.right > window.innerWidth + tolerance ||
+        textRect.right > viewportWidth + tolerance ||
         textRect.left < -tolerance
       ) {
         return true;
@@ -122,13 +126,19 @@ function scanOverflowIssues(
     if (!isVisible(el) || isExcluded(el)) continue;
 
     const rect = el.getBoundingClientRect();
+    const style = getComputedStyle(el);
     const reasons: OverflowReason[] = [];
 
-    if (rect.left < -tolerance || rect.right > window.innerWidth + tolerance) {
+    if (rect.left < -tolerance || rect.right > viewportWidth + tolerance) {
       reasons.push('boxOutsideViewport');
     }
 
-    if (el.scrollWidth > el.clientWidth + tolerance) {
+    // A horizontal scroll container (overflow-x: auto|scroll) intentionally
+    // holds wider content without forcing the page to reflow, so it is the
+    // recommended WCAG 1.4.10 fix rather than a failure — skip it.
+    const scrollsHorizontally =
+      style.overflowX === 'auto' || style.overflowX === 'scroll';
+    if (!scrollsHorizontally && el.scrollWidth > el.clientWidth + tolerance) {
       reasons.push('contentWiderThanBox');
     }
 
@@ -186,16 +196,16 @@ function formatIssues(issues: OverflowIssue[]): string {
 }
 
 export const viewportOverflowExpect = baseExpect.extend({
-  async toNotOverflowViewPort(
+  async toOverflowViewPort(
     root: Locator,
     exclusions: ViewportOverflowExclusion[] = [],
     options?: { tolerance?: number },
   ) {
     const tolerance = options?.tolerance ?? DEFAULT_TOLERANCE_PX;
     const issues = await findOverflowIssues(root, exclusions, tolerance);
-    const pass = issues.length === 0;
+    const pass = issues.length > 0;
 
-    if (!pass) {
+    if (pass) {
       await attachDebugScreenshot(root, issues, {
         debugId: 'a11y-overflow-debug',
         label: 'overflow',
@@ -204,19 +214,16 @@ export const viewportOverflowExpect = baseExpect.extend({
     }
 
     return {
-      pass: this.isNot ? !pass : pass,
-      name: 'toNotOverflowViewPort',
+      // `pass` is the positive result ("does overflow"); Playwright inverts it
+      // automatically for `.not.toOverflowViewPort()`.
+      pass,
+      name: 'toOverflowViewPort',
       expected: [],
       actual: issues,
-      message: () => {
-        if (this.isNot) {
-          return pass
-            ? `Expected viewport overflow inside root, but found none`
-            : `Expected no viewport overflow, but found ${issues.length}:\n\n${formatIssues(issues)}`;
-        }
-
-        return `Expected no viewport overflow inside root, but found ${issues.length} overflowing element(s):\n\n${formatIssues(issues)}`;
-      },
+      message: () =>
+        this.isNot
+          ? `Expected no viewport overflow inside root, but found ${issues.length} overflowing element(s):\n\n${formatIssues(issues)}`
+          : `Expected viewport overflow inside root, but found none`,
     };
   },
 });

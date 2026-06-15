@@ -1,7 +1,7 @@
-import { expect as baseExpect, mergeExpects } from '@playwright/test';
+import { mergeExpects } from '@playwright/test';
 import { obscuredExpect } from './to-be-obscured';
 import { textOutsideBoxExpect } from './to-not-have-elements-with-text-outside-the-box';
-import { viewportOverflowExpect, viewportOverflowMatcher } from './to-not-overflow-viewport';
+import { viewportOverflowExpect} from './to-overflow-viewport';
 import { focusOrderExpect } from './to-have-focus-order';
 import { accessibleExpect } from './to-be-accessible';
 
@@ -11,7 +11,7 @@ export type {
   OverflowIssue,
   OverflowReason,
   ViewportOverflowExclusion,
-} from './to-not-overflow-viewport';
+} from './to-overflow-viewport';
 export type {
   TextOutsideBoxExclusion,
   TextOutsideBoxIssue,
@@ -21,7 +21,7 @@ export { analyzeElementObscured } from './to-be-obscured';
 export {
   findOverflowIssues,
   overflowIssueLocator,
-} from './to-not-overflow-viewport';
+} from './to-overflow-viewport';
 export { findTextOutsideBoxIssues } from './to-not-have-elements-with-text-outside-the-box';
 
 export const expect = mergeExpects(

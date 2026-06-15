@@ -11,7 +11,7 @@ test.describe('Exceed Viewport', () => {
 
     const main = page.getByRole('main').first();
     await expect(main).toBeVisible();
-    await expect(main).toNotOverflowViewPort([]);
+    await expect(main).not.toOverflowViewPort();
   });
 
   test.fail('exceed viewport main content should not overflow at 320px', async ({ page }) => {
@@ -19,6 +19,6 @@ test.describe('Exceed Viewport', () => {
 
     const main = page.getByRole('main').first();
     await expect(main).toBeVisible();
-    await expect(main).toNotOverflowViewPort([]);
+    await expect(main).not.toOverflowViewPort();
   });
 });
