@@ -50,14 +50,14 @@ import {MatTabsModule} from '@angular/material/tabs';
     </mat-form-field>
 
     <h2>Slider</h2>
-    <p><mat-slide-toggle>Slide me!</mat-slide-toggle></p>
+    <mat-slide-toggle>Slide me!</mat-slide-toggle>
 
     <h2>Button Toggle</h2>
     <mat-button-toggle-group name="fontStyle" aria-label="Font Style">
-  <mat-button-toggle value="bold">Bold</mat-button-toggle>
-  <mat-button-toggle value="italic">Italic</mat-button-toggle>
-  <mat-button-toggle value="underline">Underline</mat-button-toggle>
-</mat-button-toggle-group>
+      <mat-button-toggle value="bold">Bold</mat-button-toggle>
+      <mat-button-toggle value="italic">Italic</mat-button-toggle>
+      <mat-button-toggle value="underline">Underline</mat-button-toggle>
+    </mat-button-toggle-group>
 
   <h2>Datepicker</h2>
   <mat-form-field>
@@ -94,7 +94,7 @@ import {MatTabsModule} from '@angular/material/tabs';
 
   <h2>Slider</h2>
   <mat-slider>
-  <input matSliderThumb>
+  <input matSliderThumb aria-label="Slider">
 </mat-slider>
 
 <h2>Tabs</h2>
