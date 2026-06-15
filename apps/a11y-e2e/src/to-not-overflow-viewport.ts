@@ -1,4 +1,4 @@
-import { Locator } from '@playwright/test';
+import { Locator, expect as baseExpect } from '@playwright/test';
 import {
   attachDebugScreenshot,
   DEFAULT_TOLERANCE_PX,
@@ -185,9 +185,8 @@ function formatIssues(issues: OverflowIssue[]): string {
     .join('\n\n');
 }
 
-export const viewportOverflowMatcher = {
+export const viewportOverflowExpect = baseExpect.extend({
   async toNotOverflowViewPort(
-    this: { isNot?: boolean },
     root: Locator,
     exclusions: ViewportOverflowExclusion[] = [],
     options?: { tolerance?: number },
@@ -220,16 +219,4 @@ export const viewportOverflowMatcher = {
       },
     };
   },
-};
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace PlaywrightTest {
-    interface Matchers<R> {
-      toNotOverflowViewPort(
-        exclusions?: ViewportOverflowExclusion[],
-        options?: { tolerance?: number },
-      ): Promise<R>;
-    }
-  }
-}
+});
