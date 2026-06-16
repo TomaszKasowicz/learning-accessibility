@@ -62,7 +62,7 @@ async function findOffendingElements(page: Page): Promise<OffendingElement[]> {
     const viewportWidth = document.documentElement.clientWidth;
     const offenders: OffendingElement[] = [];
 
-    const describe = (el: Element): string => {
+    const describeElement = (el: Element): string => {
       const id = el.id ? `#${el.id}` : '';
       const cls =
         typeof el.className === 'string' && el.className.trim()
@@ -76,7 +76,7 @@ async function findOffendingElements(page: Page): Promise<OffendingElement[]> {
       if (rect.width === 0 || rect.height === 0) return;
       if (rect.right > viewportWidth + tolerance) {
         offenders.push({
-          selector: describe(el),
+          selector: describeElement(el),
           right: Math.round(rect.right),
           width: Math.round(rect.width),
           text: (el.textContent || '').trim().slice(0, 50),
@@ -102,7 +102,6 @@ test.describe('WCAG 1.4.10 Reflow', () => {
     expect(content).toBeDefined();
 
     // A missing viewport meta is fine; a present one must not disable zoom.
-    // eslint-disable-next-line playwright/no-conditional-in-test
     if (content) {
       // eslint-disable-next-line playwright/no-conditional-expect
       expect(
@@ -112,7 +111,6 @@ test.describe('WCAG 1.4.10 Reflow', () => {
 
       const maxScale = content.match(/maximum-scale\s*=\s*([\d.]+)/i);
 
-      // eslint-disable-next-line playwright/no-conditional-in-test
       if (maxScale) {
         // eslint-disable-next-line playwright/no-conditional-expect
         expect(
