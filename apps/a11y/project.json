@@ -20,7 +20,8 @@
             "input": "apps/a11y/public"
           }
         ],
-        "styles": ["apps/a11y/src/styles.scss"]
+        "styles": ["apps/a11y/src/styles.scss"],
+        "polyfills": ["@angular/localize/init"]
       },
       "configurations": {
         "production": {
