@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { expect } from './expect';
+import { expect } from './expect/expect';
 
 const REFLOW_VIEWPORT = { width: 320, height: 256 };
 

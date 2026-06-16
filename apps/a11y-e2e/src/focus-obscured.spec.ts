@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { expect } from './expect';
+import { expect } from './expect/expect';
 
 test.describe('Focus Obscured', () => {
   test.fail('Buy now focus is not obscured (WCAG 2.4.11)', async ({ page }) => {

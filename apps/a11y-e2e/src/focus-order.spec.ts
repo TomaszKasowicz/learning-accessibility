@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { expect } from './expect';
+import { expect } from './expect/expect';
 
 test.describe('Focus Order', () => {
   test('should have focus order', async ({ page }) => {
