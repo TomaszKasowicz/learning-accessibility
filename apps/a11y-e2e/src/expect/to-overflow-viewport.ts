@@ -33,9 +33,12 @@ function scanOverflowIssues(
 ): ScanResult {
   const { tolerance, exclusionSelectors } = args;
 
+
   // Layout viewport width excluding any scrollbar (more accurate than
   // window.innerWidth, which includes the scrollbar gutter).
   const viewportWidth = document.documentElement.clientWidth;
+
+  console.log('scanOverflowIssues',{ tag: root.tagName, args, viewportWidth });
 
   const relativeSelector = (el: Element): string => {
     if (el === root) return ':scope';
@@ -73,6 +76,25 @@ function scanOverflowIssues(
           return true;
         }
       }
+    }
+
+    return false;
+  };
+
+  // WCAG 2.1 SC 1.4.10 (Reflow) exempts content that requires two-dimensional
+  // layout for usage or meaning — data tables, maps, diagrams, video, etc. The
+  // sanctioned authoring technique is to place such content inside a horizontal
+  // scroll container so the page itself still reflows. When an element lives
+  // inside such a container (within the scanned root), its own box/content/text
+  // is allowed to extend past the viewport, so we skip overflow checks for it.
+  const hasHorizontalScrollAncestor = (el: Element): boolean => {
+    let node: Element | null = el.parentElement;
+
+    while (node) {
+      const overflowX = getComputedStyle(node).overflowX;
+      if (overflowX === 'auto' || overflowX === 'scroll') return true;
+      if (node === root) break;
+      node = node.parentElement;
     }
 
     return false;
@@ -123,13 +145,22 @@ function scanOverflowIssues(
   const issues: ScanResult = [];
 
   for (const el of [root, ...Array.from(root.querySelectorAll('*'))]) {
+
     if (!isVisible(el) || isExcluded(el)) continue;
 
     const rect = el.getBoundingClientRect();
     const style = getComputedStyle(el);
     const reasons: OverflowReason[] = [];
 
-    if (rect.left < -tolerance || rect.right > viewportWidth + tolerance) {
+    // Content nested inside a horizontal scroll container is part of a
+    // WCAG 1.4.10 excepted region (the scroller scopes the exception), so its
+    // overflow is intentional and must not be reported.
+    const insideHorizontalScroll = hasHorizontalScrollAncestor(el);
+
+    if (
+      !insideHorizontalScroll &&
+      (rect.left < -tolerance || rect.right > viewportWidth + tolerance)
+    ) {
       reasons.push('boxOutsideViewport');
     }
 
@@ -138,11 +169,15 @@ function scanOverflowIssues(
     // recommended WCAG 1.4.10 fix rather than a failure — skip it.
     const scrollsHorizontally =
       style.overflowX === 'auto' || style.overflowX === 'scroll';
-    if (!scrollsHorizontally && el.scrollWidth > el.clientWidth + tolerance) {
+    if (
+      !scrollsHorizontally &&
+      !insideHorizontalScroll &&
+      el.scrollWidth > el.clientWidth + tolerance
+    ) {
       reasons.push('contentWiderThanBox');
     }
 
-    if (hasDirectTextOutsideViewport(el)) {
+    if (!insideHorizontalScroll && hasDirectTextOutsideViewport(el)) {
       reasons.push('textOutsideViewport');
     }
 
