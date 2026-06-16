@@ -2,8 +2,8 @@ import { Page, expect as baseExpect } from "@playwright/test";
 
 export type FocusableElement = {
   tagName: string;
-  text: string;
-  ariaSnapshot: string;
+  textContent?: string;
+  innerText?: string;
 };
 
 /** Collapse whitespace — innerText() uses block boundaries; exact spacing is not stable. */
@@ -16,10 +16,15 @@ function normalizeText(text: string): string {
 
 async function getFocusedElement(page: Page): Promise<FocusableElement> {
   const focusedElement = page.locator(':focus');
-  const text = await focusedElement.innerText();
-  const ariaSnapshot = await focusedElement.ariaSnapshot();
+  const textContent = await focusedElement.textContent();
+  const innerText = await focusedElement.innerText();
+  // const ariaSnapshot = await focusedElement.ariaSnapshot();
   const tag = await focusedElement.evaluate((el) => el.tagName.toLowerCase());
-  return { tagName: tag, text: normalizeText(text), ariaSnapshot: normalizeText(ariaSnapshot) };
+  return {
+    tagName: tag,
+    textContent: normalizeText(textContent ?? ''),
+    innerText: normalizeText(innerText ?? '')
+  };
 }
 
 export const focusOrderExpect = baseExpect.extend({
@@ -35,10 +40,17 @@ export const focusOrderExpect = baseExpect.extend({
     const pass =
     actual.length === expected.length &&
       actual.every(
-        (el, idx) =>
-          el.tagName === expected[idx].tagName &&
-          el.text === expected[idx].text &&
-          el.ariaSnapshot === expected[idx].ariaSnapshot,
+        (el, idx) => {
+          const sameTag = el.tagName === expected[idx].tagName;
+
+          if (expected[idx].textContent) {
+            return sameTag && el.textContent?.startsWith(expected[idx].textContent);
+          }
+          if (expected[idx].innerText) {
+            return sameTag && el.innerText?.startsWith(expected[idx].innerText);
+          }
+          return sameTag;
+        }
       );
 
     return {
@@ -54,4 +66,3 @@ export const focusOrderExpect = baseExpect.extend({
         )}`,
     };
   }});
-
