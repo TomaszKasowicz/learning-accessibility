@@ -7,6 +7,7 @@ test.describe('Focus Order', () => {
     const main = page.getByRole('main').first();
     await main.focus();
 
+    // Users can use either innerText or textContent (or both) to match the focused element.
     await expect(page).toHaveFocusOrder([
       { tagName: 'button', textContent: 'Click me' },
       { tagName: 'a', textContent: 'Google' },
