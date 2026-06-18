@@ -23,7 +23,7 @@ import {MatTabsModule} from '@angular/material/tabs';
     </p>
 
     <h2>Button</h2>
-    <button matButton (click)="onClick()">Click me</button>
+    <button matButton (click)="onClick()">Click me {{ clickMeCliked() ? 'clicked' : 'not clicked' }}</button>
 
     <h2>Link</h2>
       <a matButton href="https://www.google.com">Google</a>
@@ -118,7 +118,7 @@ import {MatTabsModule} from '@angular/material/tabs';
     ReactiveFormsModule, MatButtonToggleModule, MatSliderModule, MatTabsModule],
 })
 export class FocusableAndInteractiveComponent {
-
+  protected clickMeCliked = signal(false);
   protected name = new FormControl('', [Validators.required]);
   protected isChecked = new FormControl(false);
   protected car = new FormControl('');
@@ -126,6 +126,7 @@ export class FocusableAndInteractiveComponent {
   readonly popupExpanded = signal(false);
 
   protected onClick() {
+    this.clickMeCliked.set(true);
     console.log('Button clicked');
   }
 }

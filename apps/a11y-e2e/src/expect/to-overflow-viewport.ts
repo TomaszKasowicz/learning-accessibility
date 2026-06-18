@@ -29,16 +29,15 @@ type ScanResult = OverflowIssue[];
 /** Runs in the browser — passed to locator.evaluate(). */
 function scanOverflowIssues(
   root: Element,
-  args: { tolerance: number; exclusionSelectors: string[] },
+  args: { tolerance: number; exclusionSelectors: string[] }
 ): ScanResult {
   const { tolerance, exclusionSelectors } = args;
-
 
   // Layout viewport width excluding any scrollbar (more accurate than
   // window.innerWidth, which includes the scrollbar gutter).
   const viewportWidth = document.documentElement.clientWidth;
 
-  console.log('scanOverflowIssues',{ tag: root.tagName, args, viewportWidth });
+  console.log('scanOverflowIssues', { tag: root.tagName, args, viewportWidth });
 
   const relativeSelector = (el: Element): string => {
     if (el === root) return ':scope';
@@ -102,7 +101,10 @@ function scanOverflowIssues(
 
   const hasDirectTextOutsideViewport = (el: Element): boolean => {
     for (const child of Array.from(el.childNodes)) {
-      if (child.nodeType !== Node.TEXT_NODE || !(child.textContent || '').trim()) {
+      if (
+        child.nodeType !== Node.TEXT_NODE ||
+        !(child.textContent || '').trim()
+      ) {
         continue;
       }
 
@@ -123,7 +125,7 @@ function scanOverflowIssues(
 
   const isStrictAncestorSelector = (
     ancestor: string,
-    descendant: string,
+    descendant: string
   ): boolean => {
     if (ancestor === descendant) return false;
     if (descendant === ':scope') return false;
@@ -138,14 +140,13 @@ function scanOverflowIssues(
         !allIssues.some(
           (other) =>
             candidate !== other &&
-            isStrictAncestorSelector(candidate.selector, other.selector),
-        ),
+            isStrictAncestorSelector(candidate.selector, other.selector)
+        )
     );
 
   const issues: ScanResult = [];
 
   for (const el of [root, ...Array.from(root.querySelectorAll('*'))]) {
-
     if (!isVisible(el) || isExcluded(el)) continue;
 
     const rect = el.getBoundingClientRect();
@@ -164,20 +165,31 @@ function scanOverflowIssues(
       reasons.push('boxOutsideViewport');
     }
 
-    // A horizontal scroll container (overflow-x: auto|scroll) intentionally
-    // holds wider content without forcing the page to reflow, so it is the
-    // recommended WCAG 1.4.10 fix rather than a failure — skip it.
-    const scrollsHorizontally =
-      style.overflowX === 'auto' || style.overflowX === 'scroll';
+    // Content can only spill out of its box and push the viewport wider when
+    // overflow-x is `visible`. Any other value contains the content:
+    //  - `auto`/`scroll` => intentional horizontal scroll container (the
+    //    recommended WCAG 1.4.10 technique), so wider content is by design.
+    //  - `hidden`/`clip`  => content is clipped and never rendered outside the
+    //    box, e.g. Bootstrap `.visually-hidden` screen-reader-only labels
+    //    (position:absolute; width:1px; overflow:hidden; clip:rect(0 0 0 0)),
+    //    which report scrollWidth >> clientWidth but cannot cause overflow.
+    // In all non-visible cases the content cannot reflow the page, so reporting
+    // it as overflow would be a false positive.
+    const overflowXContainsContent = style.overflowX !== 'visible';
+
     if (
-      !scrollsHorizontally &&
+      !overflowXContainsContent &&
       !insideHorizontalScroll &&
       el.scrollWidth > el.clientWidth + tolerance
     ) {
       reasons.push('contentWiderThanBox');
     }
 
-    if (!insideHorizontalScroll && hasDirectTextOutsideViewport(el)) {
+    if (
+      !overflowXContainsContent &&
+      !insideHorizontalScroll &&
+      hasDirectTextOutsideViewport(el)
+    ) {
       reasons.push('textOutsideViewport');
     }
 
@@ -200,7 +212,7 @@ function scanOverflowIssues(
 export async function findOverflowIssues(
   root: Locator,
   exclusions: ViewportOverflowExclusion[] = [],
-  tolerance = DEFAULT_TOLERANCE_PX,
+  tolerance = DEFAULT_TOLERANCE_PX
 ): Promise<OverflowIssue[]> {
   const exclusionSelectors = await resolveExclusionSelectors(root, exclusions);
 
@@ -213,7 +225,7 @@ export async function findOverflowIssues(
 /** Rebuild a Playwright locator for an issue relative to the same root. */
 export function overflowIssueLocator(
   root: Locator,
-  issue: OverflowIssue,
+  issue: OverflowIssue
 ): Locator {
   return root.locator(issue.selector);
 }
@@ -225,7 +237,7 @@ function formatIssues(issues: OverflowIssue[]): string {
         `  ${issue.selector}\n` +
         `    reasons: ${issue.reasons.join(', ')}\n` +
         `    right: ${issue.right}px, scrollWidth: ${issue.scrollWidth}, clientWidth: ${issue.clientWidth}` +
-        (issue.text ? `\n    text: "${issue.text}"` : ''),
+        (issue.text ? `\n    text: "${issue.text}"` : '')
     )
     .join('\n\n');
 }
@@ -234,7 +246,7 @@ export const viewportOverflowExpect = baseExpect.extend({
   async toOverflowViewPort(
     root: Locator,
     exclusions: ViewportOverflowExclusion[] = [],
-    options?: { tolerance?: number },
+    options?: { tolerance?: number }
   ) {
     const tolerance = options?.tolerance ?? DEFAULT_TOLERANCE_PX;
     const issues = await findOverflowIssues(root, exclusions, tolerance);
@@ -257,7 +269,9 @@ export const viewportOverflowExpect = baseExpect.extend({
       actual: issues,
       message: () =>
         this.isNot
-          ? `Expected no viewport overflow inside root, but found ${issues.length} overflowing element(s):\n\n${formatIssues(issues)}`
+          ? `Expected no viewport overflow inside root, but found ${
+              issues.length
+            } overflowing element(s):\n\n${formatIssues(issues)}`
           : `Expected viewport overflow inside root, but found none`,
     };
   },

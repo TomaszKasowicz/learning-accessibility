@@ -1,15 +1,16 @@
 import { test } from '@playwright/test';
 import { expect } from './expect/expect';
 
-test.describe('Focus Order', () => {
+test.describe('Focus Order',{ tag: ['@a11y', '@focus-order']}, () => {
   test('should have focus order', async ({ page }) => {
     await page.goto('/focusable-and-interactive');
+    const button = page.getByRole('button', { name: 'Click me not clicked' });
+    await button.focus();
     const main = page.getByRole('main').first();
-    await main.focus();
 
     // Users can use either innerText or textContent (or both) to match the focused element.
-    await expect(page).toHaveFocusOrder([
-      { tagName: 'button', textContent: 'Click me' },
+    await expect(main).toHaveFocusOrder([
+      { tagName: 'button', textContent: 'Click me not clicked' },
       { tagName: 'a', textContent: 'Google' },
       { tagName: 'input', textContent: ''}, // input
       { tagName: 'input', textContent: '' }, // checkbox

@@ -1,4 +1,4 @@
-import { Page, expect as baseExpect } from "@playwright/test";
+import { Locator, Page, expect as baseExpect } from '@playwright/test';
 
 export type FocusableElement = {
   tagName: string;
@@ -15,54 +15,63 @@ function normalizeText(text: string): string {
 }
 
 async function getFocusedElement(page: Page): Promise<FocusableElement> {
-  const focusedElement = page.locator(':focus');
-  const textContent = await focusedElement.textContent();
-  const innerText = await focusedElement.innerText();
-  // const ariaSnapshot = await focusedElement.ariaSnapshot();
-  const tag = await focusedElement.evaluate((el) => el.tagName.toLowerCase());
+  const { tagName, textContent, innerText } = await page
+    .locator(':focus')
+    .evaluate((el) => ({
+      tagName: el.tagName.toLowerCase(),
+      textContent: el.textContent ?? '',
+      innerText: (el as HTMLElement).innerText ?? '',
+    }));
+
   return {
-    tagName: tag,
-    textContent: normalizeText(textContent ?? ''),
-    innerText: normalizeText(innerText ?? '')
+    tagName,
+    textContent: normalizeText(textContent),
+    innerText: normalizeText(innerText),
   };
 }
 
 export const focusOrderExpect = baseExpect.extend({
-  async toHaveFocusOrder(page: Page, expected: FocusableElement[]) {
+  async toHaveFocusOrder(root: Locator, expected: FocusableElement[]) {
+    const page = root.page();
     const actual: FocusableElement[] = [];
-    for (let i = 0; i < expected.length; i++) {
+    actual.push(await getFocusedElement(page));
+    for (let i = 1; i < expected.length; i++) {
+      // Use the page-level keyboard so Tab advances from the currently focused
+      // element. `root.press('Tab')` would re-focus `root` first; since <main>
+      // is not focusable, that blurs the active control back to <body>, making
+      // every Tab land on the first tabbable element again.
       await page.keyboard.press('Tab');
-
-      const currentFocus = await getFocusedElement(page);
-      actual.push(currentFocus);
+      actual.push(await getFocusedElement(page));
     }
 
     const pass =
-    actual.length === expected.length &&
-      actual.every(
-        (el, idx) => {
-          const sameTag = el.tagName === expected[idx].tagName;
+      actual.length === expected.length &&
+      actual.every((el, idx) => {
+        const sameTag = el.tagName === expected[idx].tagName;
 
-          if (expected[idx].textContent) {
-            return sameTag && el.textContent?.startsWith(expected[idx].textContent);
-          }
-          if (expected[idx].innerText) {
-            return sameTag && el.innerText?.startsWith(expected[idx].innerText);
-          }
-          return sameTag;
+        if (expected[idx].textContent) {
+          return (
+            sameTag && el.textContent?.startsWith(expected[idx].textContent)
+          );
         }
-      );
+        if (expected[idx].innerText) {
+          return sameTag && el.innerText?.startsWith(expected[idx].innerText);
+        }
+        return sameTag;
+      });
 
     return {
-      pass: this.isNot ? !pass : pass,
+      // Positive result; Playwright inverts automatically for `.not`.
+      pass,
       name: 'toHaveFocusOrder',
       message: () =>
-        `Expected different focus order ${this.utils.printDiffOrStringify(
+        `Expected focus order to match:\n${this.utils.printDiffOrStringify(
           expected,
           actual,
           'expected',
           'actual',
-          false,
+          false
         )}`,
     };
-  }});
+  },
+});
