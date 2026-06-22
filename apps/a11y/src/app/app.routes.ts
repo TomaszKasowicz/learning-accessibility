@@ -14,6 +14,7 @@ import { DuplicateMainComponent } from './components/a11y/duplicate-main/duplica
 import { LabelContentNameMismatchComponent } from './components/a11y/label-content-name-mismatch/label-content-name-mismatch.component';
 import { ExceedViewportComponent } from './components/a11y/exceed-viewport/exceed-viewport.component';
 import { FocusableAndInteractiveComponent } from './components/a11y/focusable-and-interactive/focusable-and-interactive';
+import { ButtonWithTooltipComponent } from './components/a11y/button-with-tooltip/button-with-tooltip';
 
 export interface NavRoute {
   path: string;
@@ -65,6 +66,11 @@ export const appRoutes: Route[] = [
     path: 'focusable-and-interactive',
     component: FocusableAndInteractiveComponent,
     title: 'Focusable and Interactive',
+  },
+  {
+    path: 'button-with-tooltip',
+    component: ButtonWithTooltipComponent,
+    title: 'Button with Tooltip',
   },
   { path: 'axe-rules', component: AxeRulesComponent, title: 'Axe Rules' },
   {
