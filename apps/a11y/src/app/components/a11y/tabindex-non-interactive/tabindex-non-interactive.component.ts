@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-tabindex-non-interactive',
@@ -55,7 +55,6 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
       background: color-mix(in srgb, currentColor 8%, transparent);
     }
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class TabindexNonInteractiveComponent {}

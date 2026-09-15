@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import type { Result } from 'axe-core';
 import { AxeService } from './axe.service';
@@ -55,7 +55,6 @@ import { MatButtonModule } from '@angular/material/button';
       </section>
     }
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
   styles: `
     .axe-results {
       margin-top: 2rem;

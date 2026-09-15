@@ -1,8 +1,7 @@
-import { Component, ChangeDetectionStrategy } from "@angular/core";
+import { Component } from "@angular/core";
 
 @Component({
   selector: 'app-wrong-headings',
-  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
         <h1>Heading Level 1</h1>
         <h2>Heading Level 2</h2>

@@ -1,4 +1,4 @@
-import { Component, signal, ChangeDetectionStrategy } from "@angular/core";
+import { Component, signal } from "@angular/core";
 import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
@@ -108,7 +108,6 @@ import {MatTabsModule} from '@angular/material/tabs';
   styles: `
   `,
   providers: [provideNativeDateAdapter()],
-  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     MatInputModule,
     MatSelectModule,

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-exceed-viewport',
@@ -22,7 +22,6 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
       white-space: nowrap;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class ExceedViewportComponent {}

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-duplicate-main',
@@ -36,7 +36,6 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
       border-radius: 4px;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class DuplicateMainComponent {}

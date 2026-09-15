@@ -1,5 +1,4 @@
-
-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import {Tab as AriaTab, Tabs, TabList, TabPanel, TabContent} from '@angular/aria/tabs';
 
 type TabId = 'ok-tab-1' | 'ok-tab-2' | 'ok-tab-3';
@@ -64,7 +63,6 @@ interface Tab {
       margin-top: 1rem;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [AriaTab, Tabs, TabList, TabPanel, TabContent],
 })
 export class ForbiddenChildrenComponent {

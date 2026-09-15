@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import type { RuleMetadata } from 'axe-core';
 import { AXE_DEFAULT_TAGS } from '../../axe/axe.config';
 import { AxeService } from '../../axe/axe.service';
@@ -113,7 +113,6 @@ interface RuleRow extends RuleMetadata {
       white-space: nowrap;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class AxeRulesComponent {

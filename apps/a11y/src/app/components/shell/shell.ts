@@ -6,7 +6,6 @@ import {
   inject,
   signal,
   viewChild,
-  ChangeDetectionStrategy
 } from '@angular/core';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButton } from '@angular/material/button';
@@ -126,7 +125,6 @@ import { getNavRoutes } from '../../app.routes';
       </mat-sidenav-content>
     </mat-sidenav-container>
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
   styles: `
     :host {
       display: block;
