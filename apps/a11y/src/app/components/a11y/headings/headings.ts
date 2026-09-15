@@ -1,7 +1,8 @@
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 
 @Component({
   selector: 'app-headings',
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
         <h1>Heading Level 1</h1>
         <h2>Heading Level 2</h2>

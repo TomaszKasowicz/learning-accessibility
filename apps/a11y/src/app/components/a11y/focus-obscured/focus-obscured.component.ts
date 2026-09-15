@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-focus-obscured',
@@ -62,6 +62,7 @@ import { Component } from '@angular/core';
       color: #fff;
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class FocusObscuredComponent {

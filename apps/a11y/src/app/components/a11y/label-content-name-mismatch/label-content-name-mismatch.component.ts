@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-label-content-name-mismatch',
@@ -42,6 +42,7 @@ import { Component } from '@angular/core';
       padding: 0.5rem 1rem;
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class LabelContentNameMismatchComponent {}

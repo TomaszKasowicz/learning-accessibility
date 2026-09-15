@@ -1,4 +1,4 @@
-import { Component, signal } from "@angular/core";
+import { Component, signal, ChangeDetectionStrategy } from "@angular/core";
 import { MatButton } from "@angular/material/button";
 import { MatTooltip } from "@angular/material/tooltip";
 import { MatFormField, MatInput, MatLabel } from "@angular/material/input";
@@ -30,6 +30,7 @@ import { FormControl, FormControlDirective, ReactiveFormsModule } from "@angular
   `,
   styles: `
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatButton, MatTooltip, MatInput, MatFormField, MatLabel, ReactiveFormsModule],
 })
 export class ButtonWithTooltipComponent {

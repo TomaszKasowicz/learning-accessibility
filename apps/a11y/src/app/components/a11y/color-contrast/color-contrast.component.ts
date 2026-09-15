@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-color-contrast',
@@ -21,6 +21,7 @@ import { Component } from '@angular/core';
       background-color: #ffffff;
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class ColorContrastComponent {}

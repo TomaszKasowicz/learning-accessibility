@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 
 @Component({
   selector: 'app-pointer-size',
@@ -25,6 +25,7 @@ import { Component } from "@angular/core";
   }
 
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class PointerSizeComponent {

@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject } from "@angular/core";
+import { Component, ElementRef, inject, ChangeDetectionStrategy } from "@angular/core";
 import { Dialog, DialogModule} from '@angular/cdk/dialog';
 import { DialogContentComponent, DialogContentData } from "./dialog-content.component";
 import { MatButtonModule } from "@angular/material/button";
@@ -12,6 +12,7 @@ import { MatButtonModule } from "@angular/material/button";
   `,
   styles: `
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [DialogModule, MatButtonModule],
 })
 export class DialogComponent {
