@@ -112,5 +112,6 @@
       "style": "css"
     }
   },
-  "analytics": false
+  "analytics": false,
+  "neverConnectToCloud": true
 }

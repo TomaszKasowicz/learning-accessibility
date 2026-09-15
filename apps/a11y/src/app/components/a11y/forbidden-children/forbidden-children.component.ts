@@ -1,4 +1,3 @@
-
 import { Component, signal } from '@angular/core';
 import {Tab as AriaTab, Tabs, TabList, TabPanel, TabContent} from '@angular/aria/tabs';
 
