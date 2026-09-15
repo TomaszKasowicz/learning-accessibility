@@ -1,5 +1,5 @@
 import { DIALOG_DATA, DialogRef } from "@angular/cdk/dialog";
-import { Component, ElementRef, inject,  } from "@angular/core";
+import { Component, ElementRef, inject } from "@angular/core";
 import { AxeService } from "../../../axe/axe.service";
 import { MatButtonModule } from "@angular/material/button";
 
