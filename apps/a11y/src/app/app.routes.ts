@@ -15,6 +15,7 @@ import { LabelContentNameMismatchComponent } from './components/a11y/label-conte
 import { ExceedViewportComponent } from './components/a11y/exceed-viewport/exceed-viewport.component';
 import { FocusableAndInteractiveComponent } from './components/a11y/focusable-and-interactive/focusable-and-interactive';
 import { ButtonWithTooltipComponent } from './components/a11y/button-with-tooltip/button-with-tooltip';
+import { TableWithAngularAriaComponent } from './components/a11y/table/table-with-angular-aria.component';
 
 export interface NavRoute {
   path: string;
@@ -23,7 +24,12 @@ export interface NavRoute {
 
 export function getNavRoutes(): NavRoute[] {
   return appRoutes.flatMap((route) => {
-    if (!route.path || route.path === '**' || route.redirectTo || !route.title) {
+    if (
+      !route.path ||
+      route.path === '**' ||
+      route.redirectTo ||
+      !route.title
+    ) {
       return [];
     }
 
@@ -37,10 +43,26 @@ export const appRoutes: Route[] = [
   { path: 'home', component: Home, title: 'Home' },
   { path: 'headings', component: Headings, title: 'Headings' },
   { path: 'wrong-headings', component: WrongHeadings, title: 'Wrong Headings' },
-  { path: 'forbidden-children', component: ForbiddenChildrenComponent, title: 'Forbidden Children' },
-  { path: 'pointer-size', component: PointerSizeComponent, title: 'Pointer Size'},
-  { path: 'focus-obscured', component: FocusObscuredComponent, title: 'Focus Obscured' },
-  { path: 'color-contrast', component: ColorContrastComponent, title: 'Color Contrast' },
+  {
+    path: 'forbidden-children',
+    component: ForbiddenChildrenComponent,
+    title: 'Forbidden Children',
+  },
+  {
+    path: 'pointer-size',
+    component: PointerSizeComponent,
+    title: 'Pointer Size',
+  },
+  {
+    path: 'focus-obscured',
+    component: FocusObscuredComponent,
+    title: 'Focus Obscured',
+  },
+  {
+    path: 'color-contrast',
+    component: ColorContrastComponent,
+    title: 'Color Contrast',
+  },
   {
     path: 'tabindex-non-interactive',
     component: TabindexNonInteractiveComponent,
@@ -78,6 +100,10 @@ export const appRoutes: Route[] = [
     component: AxeRulesByTagComponent,
     title: 'Axe Rules by Tag',
   },
-
+  {
+    path: 'table-with-angular-aria',
+    component: TableWithAngularAriaComponent,
+    title: 'Table with Angular Aria',
+  },
   { path: '**', redirectTo: 'home' },
 ];
