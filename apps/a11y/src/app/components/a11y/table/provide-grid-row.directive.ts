@@ -17,7 +17,9 @@ import { NgGridRowRegistry } from './grid-row.registry';
       useFactory: () => {
         const row = inject(NgGridRowRegistry).mostRecentRow;
         if (!row) {
-          throw new Error('appProvideNgGridRow: no ngGridRow is being rendered.');
+          throw new Error(
+            'appProvideNgGridRow: no ngGridRow is being rendered.',
+          );
         }
         return row;
       },

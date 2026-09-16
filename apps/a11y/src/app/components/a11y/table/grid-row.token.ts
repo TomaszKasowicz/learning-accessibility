@@ -19,7 +19,9 @@ const ABORT = Symbol('abort');
  * metadata from production builds.
  */
 function readGridRowToken(): InjectionToken<GridRow> {
-  const def = (GridRow as unknown as { ɵdir: { providersResolver?: ProvidersResolver } }).ɵdir;
+  const def = (
+    GridRow as unknown as { ɵdir: { providersResolver?: ProvidersResolver } }
+  ).ɵdir;
 
   let providers: unknown[] = [];
   try {
@@ -36,7 +38,12 @@ function readGridRowToken(): InjectionToken<GridRow> {
   const token = providers
     .flat(Infinity)
     .find(
-      (provider): provider is { provide: InjectionToken<GridRow>; useExisting: unknown } =>
+      (
+        provider,
+      ): provider is {
+        provide: InjectionToken<GridRow>;
+        useExisting: unknown;
+      } =>
         typeof provider === 'object' &&
         provider !== null &&
         'useExisting' in provider &&
@@ -44,7 +51,9 @@ function readGridRowToken(): InjectionToken<GridRow> {
     )?.provide;
 
   if (!token) {
-    throw new Error('Could not recover the GRID_ROW token from the GridRow directive definition.');
+    throw new Error(
+      'Could not recover the GRID_ROW token from the GridRow directive definition.',
+    );
   }
 
   return token;

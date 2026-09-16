@@ -6,7 +6,10 @@ import { ProvideNgGridRowDirective } from './provide-grid-row.directive';
 import { RegisterNgGridRowDirective } from './register-grid-row.directive';
 import { NgGridRowRegistry } from './grid-row.registry';
 import { SelectionModel } from '@angular/cdk/collections';
-import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
+import {
+  MatCheckboxChange,
+  MatCheckboxModule,
+} from '@angular/material/checkbox';
 
 type Person = {
   id: number;
@@ -21,75 +24,116 @@ type Person = {
 
     <!-- role has to be declared here: CdkTable forces role="table" unless the template sets one. -->
     <div class="block w-full mb-4">
-    <!--
-      No enableSelection on purpose: the checkboxes own row selection. Turning it on would make
-      the grid claim Space/Enter and preventDefault them, so the checkboxes would never toggle.
-      That also means the grid emits no aria-selected/aria-multiselectable, so the checkboxes are
-      the only place selection state lives.
+      <!--
+       enableSelection is enabled so the grid manages roving tabindex/selection navigation.
+       selectionMode="follow" is required so Space/Enter can still toggle checkbox widgets.
     -->
-    <table
-      ngGrid
-      role="grid"
-      class="border-collapse w-full"
-      cdk-table
-      [dataSource]="data"
-      [enableSelection]="true"
-      [multi]="true"
-      [selectionMode]="'follow'"
-    >
-      <caption>
-        CDK Table with Angular Aria
-      </caption>
+      <table
+        ngGrid
+        role="grid"
+        class="border-collapse w-full"
+        cdk-table
+        [dataSource]="data"
+        [enableSelection]="true"
+        [multi]="true"
+        [selectionMode]="'follow'"
+      >
+        <caption>
+          CDK Table with Angular Aria
+        </caption>
 
-      <ng-container cdkColumnDef="selection">
-        <th cdk-header-cell *cdkHeaderCellDef appProvideNgGridRow ngGridCell role="columnheader" class="text-left">
-          <mat-checkbox
-            ngGridCellWidget
-            [focusTarget]="resolveWidgetInput"
-            [tabIndex]="-1"
-            (change)="toggleAll($event)"
-            [checked]="allSelected()"
-            [indeterminate]="partiallySelected()"
-            ariaLabel="Select All">
+        <ng-container cdkColumnDef="selection">
+          <th
+            cdk-header-cell
+            *cdkHeaderCellDef
+            appProvideNgGridRow
+            ngGridCell
+            role="columnheader"
+            class="text-left"
+          >
+            <mat-checkbox
+              ngGridCellWidget
+              [focusTarget]="resolveWidgetInput"
+              [tabIndex]="-1"
+              (change)="toggleAll($event)"
+              [checked]="allSelected()"
+              [indeterminate]="partiallySelected()"
+              ariaLabel="Select All"
+            >
               mat-checkbox for all
             </mat-checkbox>
-        </th>
-        <td cdk-cell *cdkCellDef="let row" appProvideNgGridRow ngGridCell>
-          <input ngGridCellWidget type="checkbox" [checked]="selection.isSelected(row)" (change)="selectRow(row)" [id]="'cdk-checkbox-' + row.id">
-          <label [attr.for]="'cdk-checkbox-' + row.id">Native Checkbox {{ row.id }}</label>
-          <!-- <mat-checkbox ngGridCellWidget [checked]="selection.isSelected(row)" (change)="selectRow(row)"/> -->
-        </td>
-      </ng-container>
+          </th>
+          <td cdk-cell *cdkCellDef="let row" appProvideNgGridRow ngGridCell>
+            <input
+              ngGridCellWidget
+              type="checkbox"
+              [checked]="selection.isSelected(row)"
+              (change)="selectRow(row)"
+              [id]="'cdk-checkbox-' + row.id"
+            />
+            <label [attr.for]="'cdk-checkbox-' + row.id"
+              >Native Checkbox {{ row.id }}</label
+            >
+            <!-- <mat-checkbox ngGridCellWidget [checked]="selection.isSelected(row)" (change)="selectRow(row)"/> -->
+          </td>
+        </ng-container>
 
-      <ng-container cdkColumnDef="name">
-        <th cdk-header-cell *cdkHeaderCellDef appProvideNgGridRow ngGridCell role="columnheader">
-          Name
-        </th>
-        <td cdk-cell *cdkCellDef="let row" appProvideNgGridRow ngGridCell>
-          {{ row.name }}
-        </td>
-      </ng-container>
+        <ng-container cdkColumnDef="name">
+          <th
+            cdk-header-cell
+            *cdkHeaderCellDef
+            appProvideNgGridRow
+            ngGridCell
+            role="columnheader"
+          >
+            Name
+          </th>
+          <td cdk-cell *cdkCellDef="let row" appProvideNgGridRow ngGridCell>
+            {{ row.name }}
+          </td>
+        </ng-container>
 
-      <ng-container cdkColumnDef="age">
-        <th cdk-header-cell *cdkHeaderCellDef appProvideNgGridRow ngGridCell role="columnheader">
-          Age
-        </th>
-        <td cdk-cell *cdkCellDef="let row" appProvideNgGridRow ngGridCell>
-          {{ row.age }}
-        </td>
-      </ng-container>
+        <ng-container cdkColumnDef="age">
+          <th
+            cdk-header-cell
+            *cdkHeaderCellDef
+            appProvideNgGridRow
+            ngGridCell
+            role="columnheader"
+          >
+            Age
+          </th>
+          <td cdk-cell *cdkCellDef="let row" appProvideNgGridRow ngGridCell>
+            {{ row.age }}
+          </td>
+        </ng-container>
 
-      <tr ngGridRow appRegisterNgGridRow cdk-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-      <tr ngGridRow appRegisterNgGridRow cdk-row *cdkRowDef="let row; columns: displayedColumns"></tr>
-    </table>
+        <tr
+          ngGridRow
+          appRegisterNgGridRow
+          cdk-header-row
+          *cdkHeaderRowDef="displayedColumns"
+        ></tr>
+        <tr
+          ngGridRow
+          appRegisterNgGridRow
+          cdk-row
+          *cdkRowDef="let row; columns: displayedColumns"
+        ></tr>
+      </table>
     </div>
 
     <div class="block w-full">
-      <table ngGrid class="w-full border-collapse"
-            [enableSelection]="true"
-      [multi]="true"
-      [selectionMode]="'follow'">
-         <caption>Native Table with Angular Aria</caption>
+      <table
+        ngGrid
+        class="w-full border-collapse"
+        [enableSelection]="true"
+        [multi]="true"
+        [selectionMode]="'follow'"
+      >
+        <caption>
+          Native Table with Angular Aria
+        </caption>
         <thead>
           <tr ngGridRow>
             <th ngGridCell>
@@ -100,9 +144,8 @@ type Person = {
                 (change)="toggleAllNative($event)"
                 [indeterminate]="partiallySelected()"
                 id="native-checkbox-all"
-                >
-                <label for="native-checkbox-all">Native Checkbox For All</label>
-
+              />
+              <label for="native-checkbox-all">Native Checkbox For All</label>
             </th>
             <th ngGridCell>Name</th>
             <th ngGridCell>Age</th>
@@ -130,7 +173,9 @@ type Person = {
               <td ngGridCell>{{ row.age }}</td>
             </tr>
           } @empty {
-            <tr colspan="3">No data</tr>
+            <tr>
+              <td colspan="3">No data</td>
+            </tr>
           }
         </tbody>
       </table>
@@ -138,12 +183,26 @@ type Person = {
 
     <div class="block w-full">
       <h1>Notes</h1>
-        <ul>
-          <li>We cannot use <code>@angular/aria</code> with CDK table OOTB. We need hacking to make it work. (see code for more details)</li>
-          <li>If selectionMode is set to <code>'explicit'</code> then <code>ngGridCellWidget</code> will not work (i.e hitting space on checkbox will not toggle it).</li>
-          <li>If selectionMode is set to <code>'follow'</code> then <code>ngGridCellWidget</code> will work (i.e hitting space on checkbox will toggle it).</li>
-          <li>To make <code>ngGridCellWidget</code> work with mat-checkbox, we need to set <code>[focusTarget]</code> input for <code>mat-checkbox</code>.</li>
-        </ul>
+      <ul>
+        <li>
+          We cannot use <code>@angular/aria</code> with CDK table OOTB. We need
+          hacking to make it work. (see code for more details)
+        </li>
+        <li>
+          If selectionMode is set to <code>'explicit'</code> then
+          <code>ngGridCellWidget</code> will not work (i.e hitting space on
+          checkbox will not toggle it).
+        </li>
+        <li>
+          If selectionMode is set to <code>'follow'</code> then
+          <code>ngGridCellWidget</code> will work (i.e hitting space on checkbox
+          will toggle it).
+        </li>
+        <li>
+          To make <code>ngGridCellWidget</code> work with mat-checkbox, we need
+          to set <code>[focusTarget]</code> input for <code>mat-checkbox</code>.
+        </li>
+      </ul>
     </div>
   `,
   imports: [
@@ -154,8 +213,8 @@ type Person = {
     GridCell,
     ProvideNgGridRowDirective,
     RegisterNgGridRowDirective,
-    GridCellWidget
-],
+    GridCellWidget,
+  ],
   providers: [NgGridRowRegistry],
   styles: `
     table,
@@ -181,11 +240,14 @@ export class TableWithAngularAriaComponent {
   displayedColumns: string[] = ['selection', 'name', 'age'];
 
   /** Stable reference: a new arrow per change detection would keep rewriting the signal input. */
-  resolveWidgetInput = (host: HTMLElement) => host.querySelector('input') ?? undefined;
-
+  resolveWidgetInput = (host: HTMLElement) =>
+    host.querySelector('input') ?? undefined;
 
   partiallySelected() {
-    return this.selection.selected.length > 0 && this.selection.selected.length < this.data.length;
+    return (
+      this.selection.selected.length > 0 &&
+      this.selection.selected.length < this.data.length
+    );
   }
 
   allSelected() {
@@ -215,11 +277,6 @@ export class TableWithAngularAriaComponent {
     } else {
       this.selection.clear();
     }
-
-  }
-
-  logIndeterminateChange(event: boolean) {
-    console.log('[logIndeterminateChange] event', event);
   }
 
   selectRow(row: Person) {
