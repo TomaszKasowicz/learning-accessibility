@@ -15,6 +15,7 @@ import { LabelContentNameMismatchComponent } from './components/a11y/label-conte
 import { ExceedViewportComponent } from './components/a11y/exceed-viewport/exceed-viewport.component';
 import { FocusableAndInteractiveComponent } from './components/a11y/focusable-and-interactive/focusable-and-interactive';
 import { ButtonWithTooltipComponent } from './components/a11y/button-with-tooltip/button-with-tooltip';
+import { TableWithAngularAriaComponent } from './components/a11y/table/table-with-angular-aria.component';
 
 export interface NavRoute {
   path: string;
@@ -78,6 +79,6 @@ export const appRoutes: Route[] = [
     component: AxeRulesByTagComponent,
     title: 'Axe Rules by Tag',
   },
-
+  { path: 'table-with-angular-aria', component: TableWithAngularAriaComponent, title: 'Table with Angular Aria' },
   { path: '**', redirectTo: 'home' },
 ];
